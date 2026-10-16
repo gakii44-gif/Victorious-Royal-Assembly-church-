@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%" role="img" aria-label="Victorious Royal Assembly International Official Logo">
+  <defs>
+    <!-- Circular Path for Black Upper Text: VICTORIOUS ROYAL ASSEMBLY INTERNATIONAL -->
+    <path id="textArcUpper" d="M 82,305 A 218,218 0 1,1 518,305" fill="none" />
+    
+    <!-- Curved Path for White Lower Banner Text -->
+    <path id="textArcLower" d="M 85,465 Q 300,580 515,465" fill="none" />
+    
+    <!-- Filter for crisp drop shadow -->
+    <filter id="shadowFilter" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.2" />
+    </filter>
+
+    <radialGradient id="vividGreen" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#7bd210" />
+      <stop offset="60%" stop-color="#67b70c" />
+      <stop offset="100%" stop-color="#559e07" />
+    </radialGradient>
+
+    <linearGradient id="crimsonRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#dc2626" />
+      <stop offset="60%" stop-color="#c51618" />
+      <stop offset="100%" stop-color="#991113" />
+    </linearGradient>
+
+    <!-- Clip path for circular inner scene -->
+    <clipPath id="innerCircleClip">
+      <circle cx="300" cy="275" r="195" />
+    </clipPath>
+  </defs>
+
+  <!-- Outer White Silhouette Sticker Contour (just like the original logo file) -->
+  <path d="M 300,10 
+           A 265,265 0 0,1 565,275 
+           C 565,345 540,410 520,440 
+           L 550,500 L 510,545 
+           C 430,595 370,600 300,600 
+           C 230,600 170,595 90,545 
+           L 50,500 L 80,440 
+           C 60,410 35,345 35,275 
+           A 265,265 0 0,1 300,10 Z" 
+        fill="#ffffff" 
+        filter="url(#shadowFilter)" />
+
+  <!-- Outer Double Dark Green Rims -->
+  <circle cx="300" cy="275" r="260" fill="none" stroke="#156412" stroke-width="5" />
+  <circle cx="300" cy="275" r="252" fill="none" stroke="#ffffff" stroke-width="4" />
+  <circle cx="300" cy="275" r="248" fill="none" stroke="#156412" stroke-width="3" />
+
+  <!-- Main Lime/Vivid Green Ring & Canvas -->
+  <circle cx="300" cy="275" r="246" fill="url(#vividGreen)" />
+
+  <!-- Upper Arc Text: VICTORIOUS ROYAL ASSEMBLY INTERNATIONAL (Bold Black) -->
+  <!-- Note the exact font style from the user image: Heavy black sans-serif -->
+  <text font-family="'Plus Jakarta Sans', 'Arial Black', Impact, sans-serif" font-size="28" font-weight="900" fill="#000000" letter-spacing="3.5">
+    <textPath href="#textArcUpper" startOffset="50%" text-anchor="middle">
+      VICTORIOUS ROYAL ASSEMBLY INTERNATIONAL
+    </textPath>
+  </text>
+
+  <!-- Inner Concentric Boundary Ring -->
+  <circle cx="300" cy="275" r="198" fill="none" stroke="#156412" stroke-width="5" />
+  <circle cx="300" cy="275" r="195" fill="none" stroke="#ffffff" stroke-width="3" />
+
+  <!-- INNER SCENE (Clipped to Circle) -->
+  <g clip-path="url(#innerCircleClip)">
+    <!-- Lime Green Background of Inner Circle -->
+    <circle cx="300" cy="275" r="195" fill="url(#vividGreen)" />
+
+    <!-- Open Holy Bible with Hands & Sleeve -->
+    <!-- Blue Sleeve (Left) -->
+    <path d="M 105,225 C 105,210 160,215 180,240 L 220,290 L 150,330 L 105,270 Z" fill="#2563eb" />
+    <path d="M 115,228 C 145,225 175,245 190,265" stroke="#1d4ed8" stroke-width="3" fill="none" />
+    <path d="M 120,250 C 140,250 165,270 175,290" stroke="#1e40af" stroke-width="2.5" fill="none" />
+
+    <!-- African Hand Cupping and Pointing onto the Holy Bible -->
+    <!-- Wrist & Palm -->
+    <path d="M 175,280 C 195,270 215,285 240,295 C 270,305 285,305 315,305 C 335,305 350,315 355,330 C 350,350 320,380 270,390 C 220,400 170,380 150,345 Z" fill="#6f3716" />
+    
+    <!-- Finger 1 (Index Finger pointing across the open page) -->
+    <path d="M 270,300 C 330,295 420,310 445,340 C 445,355 425,365 390,360 C 345,355 295,350 265,345 Z" fill="#84431e" stroke="#5a2c12" stroke-width="1.5" />
+    <!-- Fingernail on index finger -->
+    <ellipse cx="435" cy="342" rx="7" ry="11" transform="rotate(30 435 342)" fill="#d49b80" opacity="0.8" />
+    
+    <!-- Finger 2 (Middle Finger) -->
+    <path d="M 275,340 C 330,340 395,355 410,380 C 400,395 380,400 350,395 C 310,390 270,380 250,370 Z" fill="#7a3a17" stroke="#5a2c12" stroke-width="1.2" />
+    <!-- Fingernail on middle finger -->
+    <ellipse cx="400" cy="382" rx="6" ry="9" transform="rotate(30 400 382)" fill="#c98a6f" opacity="0.75" />
+
+    <!-- Finger 3 (Ring Finger) -->
+    <path d="M 260,370 C 300,375 350,390 365,410 C 355,420 335,425 310,418 C 280,410 245,395 235,385 Z" fill="#6a3013" stroke="#4a220c" stroke-width="1.2" />
+    
+    <!-- Hand Knuckles & Skin Creases -->
+    <path d="M 215,315 C 235,320 255,335 270,345" stroke="#4a220c" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7" />
+    <path d="M 200,340 C 220,350 240,365 255,375" stroke="#4a220c" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7" />
+    <path d="M 225,305 C 245,310 265,320 280,325" stroke="#4a220c" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6" />
+
+    <!-- Open Holy Bible -->
+    <!-- Gold / Gilded Edge of Bible Pages -->
+    <path d="M 255,400 L 450,320 L 480,335 L 470,365 L 420,415 L 295,445 Z" fill="#ca8a04" stroke="#a16207" stroke-width="1.5" />
+    <path d="M 450,320 L 485,330 L 480,350 L 445,340 Z" fill="#eab308" />
+
+    <!-- Open Bible Pages (Left Page & Right Page in Ivory) -->
+    <path d="M 235,360 C 290,340 360,315 450,320 L 425,415 C 340,410 280,430 235,440 Z" fill="#fffef0" stroke="#cbd5e1" stroke-width="1" />
+    <path d="M 180,375 C 205,370 225,365 240,360 L 240,440 C 220,442 200,445 180,448 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+
+    <!-- Printed Scripture Columns (Delicate realistic text lines) -->
+    <!-- Column 1 Lines -->
+    <line x1="260" y1="365" x2="330" y2="345" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="260" y1="373" x2="330" y2="353" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="260" y1="381" x2="325" y2="361" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="260" y1="389" x2="330" y2="369" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="260" y1="397" x2="320" y2="377" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="260" y1="405" x2="328" y2="385" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="260" y1="413" x2="315" y2="393" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+
+    <!-- Column 2 Lines -->
+    <line x1="345" y1="340" x2="420" y2="325" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="345" y1="348" x2="420" y2="333" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="345" y1="356" x2="415" y2="341" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="345" y1="364" x2="418" y2="349" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="345" y1="372" x2="410" y2="357" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="345" y1="380" x2="415" y2="365" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="345" y1="388" x2="405" y2="373" stroke="#334155" stroke-width="1.8" stroke-linecap="round" />
+
+    <!-- Bible Spine & Outer Dark Binding -->
+    <path d="M 235,360 L 240,440 L 230,443 L 225,363 Z" fill="#0f172a" />
+
+    <!-- Majestic White Dove of the Holy Spirit (In Full Flight Above Bible) -->
+    <g transform="translate(325, 205) scale(1.18)">
+      <!-- Left Wing (Raised, Feathered) -->
+      <path d="M -22,-5 C -45,-55 -38,-100 -12,-125 C -10,-105 -2,-80 8,-60 C 2,-40 -2,-20 -10,-5 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+      <path d="M -18,-95 C -30,-80 -32,-60 -22,-40" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+      <path d="M -10,-85 C -20,-70 -22,-50 -15,-30" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+      <path d="M 0,-70 C -8,-55 -10,-35 -5,-20" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+
+      <!-- Right Wing (Outstretched High to the Right) -->
+      <path d="M 8,-15 C 38,-65 72,-95 95,-110 C 85,-90 70,-65 58,-45 C 45,-25 32,-10 18,2 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+      <path d="M 75,-92 C 60,-70 48,-48 38,-28" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+      <path d="M 58,-75 C 48,-55 38,-36 28,-18" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+      <path d="M 42,-58 C 34,-40 26,-24 18,-10" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+
+      <!-- Dove Tail Feathers -->
+      <path d="M 25,25 C 48,48 65,65 75,75 C 60,65 38,50 15,35 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" />
+      <path d="M 30,32 C 45,50 58,62 65,68" stroke="#cbd5e1" stroke-width="1.5" fill="none" />
+
+      <!-- Dove Body & Head (Plump, graceful white body) -->
+      <path d="M -12,-15 C -24,-20 -40,-15 -52,-8 C -56,-5 -54,2 -48,4 C -40,6 -28,10 -15,16 C -5,22 12,26 24,22 C 28,15 24,2 16,-6 C 6,-15 -4,-12 -12,-15 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+      
+      <!-- Dove Beak (Pink/Orange Beak pointing left towards truth) -->
+      <polygon points="-52,-8 -62,-6 -50,-3" fill="#f43f5e" />
+      <!-- Dove Eye -->
+      <circle cx="-42" cy="-6" r="2.5" fill="#0f172a" />
+      <circle cx="-43" cy="-7" r="0.9" fill="#ffffff" />
+      
+      <!-- Dove Red Feet (Perched / trailing in flight) -->
+      <path d="M 5,24 L 8,33 M 12,24 L 15,33" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" />
+    </g>
+
+    <!-- V R A I Badge at bottom of circle -->
+    <g transform="translate(300, 492)">
+      <rect x="-65" y="-18" width="130" height="36" rx="4" fill="#0b5016" stroke="#ffffff" stroke-width="2" />
+      <text x="0" y="7" font-family="'Plus Jakarta Sans', 'Arial Black', Impact, sans-serif" font-size="20" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="6">
+        V R A I
+      </text>
+    </g>
+  </g>
+
+  <!-- LOWER RED RIBBON / BANNER SHAPE -->
+  <!-- Authentic shield-tail contour matching user image -->
+  <g>
+    <!-- Red Banner Body -->
+    <path d="M 75,435 
+             L 42,488 
+             L 78,540 
+             C 145,585 220,600 300,600 
+             C 380,600 455,585 522,540 
+             L 558,488 
+             L 525,435 
+             C 470,490 390,525 300,525 
+             C 210,525 130,490 75,435 Z" 
+          fill="url(#crimsonRed)" 
+          stroke="#ffffff" 
+          stroke-width="5" />
+
+    <!-- Ribbon Outer Red Hairline Accent -->
+    <path d="M 75,435 L 42,488 L 78,540 C 145,585 220,600 300,600 C 380,600 455,585 522,540 L 558,488 L 525,435" 
+          fill="none" 
+          stroke="#991113" 
+          stroke-width="2" />
+
+    <!-- White Inner Concentric Line on Ribbon -->
+    <path d="M 82,492 C 145,548 220,572 300,572 C 380,572 455,548 518,492" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="2" 
+          opacity="0.8" />
+
+    <!-- Curved White Text: A.k.a Word of faith Healing & Deliverance Ministry Int'l -->
+    <text font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="18.5" font-weight="800" fill="#ffffff" letter-spacing="0.5">
+      <textPath href="#textArcLower" startOffset="50%" text-anchor="middle">
+        A.k.a Word of faith Healing &amp; Deliverance Ministry Int'l
+      </textPath>
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "Victorious Royal Assembly International (VRAI)",
+  "description": "Official website and international donor partnership portal for Victorious Royal Assembly International, Victorious Heritage Model Academy, and Victorious Vocational School in Juba, South Sudan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

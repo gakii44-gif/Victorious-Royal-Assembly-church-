@@ -1,0 +1,5 @@
+# robots.txt for Victorious Royal Assembly International (VRAI)
+User-agent: *
+Allow: /
+
+Sitemap: https://vraisouthsudan.org/sitemap.xml
