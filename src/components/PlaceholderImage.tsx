@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, BookOpen, Scissors, Users, Church, Compass, Upload, Image as ImageIcon } from 'lucide-react';
+import { Camera, BookOpen, Scissors, Users, Church, Compass, Upload, Image as ImageIcon, Trash2, RefreshCw } from 'lucide-react';
 import { usePhotos } from '../context/PhotoContext';
 
 interface PlaceholderImageProps {
@@ -25,7 +25,7 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
   className = '',
   onOpenAssetGuide,
 }) => {
-  const { getPhoto, openUploadModal } = usePhotos();
+  const { getPhoto, openUploadModal, removePhoto } = usePhotos();
   const [fileLoadFailed, setFileLoadFailed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -77,16 +77,34 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
           </div>
         )}
 
-        {/* Change/Replace Photo Overlay button for authorized staff */}
+        {/* Replace & Delete Photo Overlay buttons for custom uploaded image */}
         {slotKey && (
-          <button
-            type="button"
-            onClick={() => openUploadModal(slotKey, label || alt)}
-            className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-[10px] font-semibold px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Camera className="w-3 h-3 text-emerald-300" />
-            <span>Replace Photo</span>
-          </button>
+          <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              type="button"
+              onClick={() => openUploadModal(slotKey, label || alt)}
+              className="bg-black/70 hover:bg-black/90 text-white text-[10px] font-semibold px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1 shadow-sm"
+              title="Replace this photo"
+            >
+              <RefreshCw className="w-3 h-3 text-emerald-300" />
+              <span>Replace</span>
+            </button>
+
+            {uploaded && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Remove custom photo and reset to default placeholder?`)) {
+                    removePhoto(slotKey);
+                  }
+                }}
+                className="bg-rose-700/80 hover:bg-rose-700 text-white text-[10px] font-semibold p-1 rounded backdrop-blur-xs shadow-sm"
+                title="Delete photo (reset to placeholder)"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         )}
       </div>
     );

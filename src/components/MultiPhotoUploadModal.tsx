@@ -14,7 +14,9 @@ import {
   Heart,
   Wrench,
   Film,
-  Play
+  Play,
+  BookOpen,
+  Smile
 } from 'lucide-react';
 import { usePhotos, GalleryCategory } from '../context/PhotoContext';
 
@@ -47,7 +49,8 @@ export const MultiPhotoUploadModal: React.FC = () => {
   // Sync category if modal opens with a different default
   React.useEffect(() => {
     if (isMultiUploadOpen) {
-      setSelectedCategory(multiUploadDefaultCategory);
+      const defaultCat = multiUploadDefaultCategory === 'heritage' ? 'victorious-heritage' : multiUploadDefaultCategory;
+      setSelectedCategory(defaultCat);
       setPendingFiles([]);
       setBatchTitle('');
       setUploadSuccess(false);
@@ -58,28 +61,34 @@ export const MultiPhotoUploadModal: React.FC = () => {
 
   const categories: { id: GalleryCategory; label: string; icon: React.ReactNode; desc: string }[] = [
     { 
-      id: 'heritage', 
-      label: 'Life at Victorious Heritage', 
-      icon: <GraduationCap className="w-4 h-4 text-emerald-600" />,
-      desc: 'Pupils, classroom moments, playtime, assembly, adult education & celebrations'
+      id: 'victorious-heritage', 
+      label: 'Victorious Heritage', 
+      icon: <BookOpen className="w-4 h-4 text-emerald-700" />,
+      desc: 'Nursery & Primary school, classrooms, literacy, arithmetic & adult education'
     },
     { 
       id: 'church', 
-      label: 'Church & Altar (Photos & Videos)', 
+      label: 'Church', 
       icon: <Church className="w-4 h-4 text-amber-600" />,
-      desc: 'Sunday worship, choir praise videos, Word of Faith altar, communion, congregations'
+      desc: 'Sunday celebration services, Word of Faith altar, communion & choir'
     },
     { 
       id: 'women', 
-      label: 'Women Section (Photos & Videos)', 
+      label: 'Women', 
       icon: <Heart className="w-4 h-4 text-rose-500" />,
-      desc: 'Women’s fellowship, anniversary uniform fabrics, prayer vigils, widow outreach'
+      desc: 'Women fellowship, anniversary uniform fabrics, prayer vigils & widow care'
     },
     { 
       id: 'vocational', 
-      label: 'School Vocational (Photos & Videos)', 
+      label: 'Vocational', 
       icon: <Wrench className="w-4 h-4 text-sky-600" />,
-      desc: 'Tailoring machines, carpentry workshops, solar/electrical, artisan apprentices'
+      desc: 'Tailoring machines, carpentry workshops, solar/electrical trades'
+    },
+    { 
+      id: 'life-at-heritage', 
+      label: 'Life at Victorious Heritage', 
+      icon: <Smile className="w-4 h-4 text-purple-600" />,
+      desc: 'Pupil everyday joy, playground swings, recess games, dining & graduation'
     },
   ];
 

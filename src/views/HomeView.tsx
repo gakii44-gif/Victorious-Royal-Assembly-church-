@@ -873,6 +873,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
                     {item.caption}
                   </p>
+                  <div className="pt-2 flex items-center justify-between text-[10px] text-emerald-800 font-bold border-t border-stone-100">
+                    <span>Manage &amp; Replace in Gallery</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
                 </div>
               </div>
             );

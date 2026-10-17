@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { saveMediaFile, getMediaFile, deleteMediaFile, generateVideoThumbnail } from '../utils/mediaStorage';
 
-export type GalleryCategory = 'heritage' | 'church' | 'women' | 'vocational';
+export type GalleryCategory = 
+  | 'victorious-heritage' 
+  | 'church' 
+  | 'women' 
+  | 'vocational' 
+  | 'life-at-heritage'
+  | 'heritage'; // backward compatibility alias for victorious-heritage
 export type MediaType = 'photo' | 'video';
 
 export interface GalleryPhotoItem {
@@ -72,12 +78,12 @@ const STORAGE_KEY_GALLERY = 'vrai_church_gallery_photos';
 
 // Default initial curated gallery placeholders
 const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
-  // 1. Life at Victorious Heritage (Nursery & Primary School & Adult Education)
+  // 1. Victorious Heritage (Nursery & Primary School & Adult Education)
   {
     id: 'heritage-assembly',
     url: '/assets/schools/heritage-academy/morning-assembly.jpg',
     title: 'Victorious Heritage Morning Assembly & Prayer',
-    category: 'heritage',
+    category: 'victorious-heritage',
     caption: 'Primary school pupils and teachers gathering for morning devotions, scripture reading, and South Sudan national anthem.',
     uploadedAt: '2026-10-01T08:00:00.000Z',
     isUserUploaded: false,
@@ -87,7 +93,7 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     id: 'heritage-classroom',
     url: '/assets/schools/heritage-academy/classroom-reading.jpg',
     title: 'Classroom Literacy & Science Lesson',
-    category: 'heritage',
+    category: 'victorious-heritage',
     caption: 'Pupils engaged in English, mathematics, and South Sudan national curriculum studies.',
     uploadedAt: '2026-10-02T09:30:00.000Z',
     isUserUploaded: false,
@@ -97,7 +103,7 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     id: 'heritage-nutrition',
     url: '/assets/schools/heritage-academy/school-nutrition.jpg',
     title: 'Pupil Nutrition & Midday Meal Program',
-    category: 'heritage',
+    category: 'victorious-heritage',
     caption: 'Daily nutritious morning porridge and meals served to support active learning and pupil health.',
     uploadedAt: '2026-10-03T12:00:00.000Z',
     isUserUploaded: false,
@@ -107,7 +113,7 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     id: 'heritage-expansion',
     url: '/assets/schools/heritage-academy/classroom-expansion.jpg',
     title: 'Classroom Desks & Facility Upgrades',
-    category: 'heritage',
+    category: 'victorious-heritage',
     caption: 'Wooden dual writing desks built by local craftsmen to ensure no child sits on the floor.',
     uploadedAt: '2026-10-04T14:15:00.000Z',
     isUserUploaded: false,
@@ -117,7 +123,7 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     id: 'heritage-video-sample',
     url: '/assets/schools/heritage-academy/classroom-reading.jpg',
     title: 'Pupils Singing & Worship at Morning Devotion',
-    category: 'heritage',
+    category: 'victorious-heritage',
     caption: 'Video highlight of pupils praising and singing hymns before morning classes in Juba.',
     uploadedAt: '2026-10-05T08:15:00.000Z',
     isUserUploaded: false,
@@ -261,6 +267,69 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     isUserUploaded: false,
     mediaType: 'video',
     duration: '0:58',
+  },
+
+  // 5. Life at Victorious Heritage (Joy, Recess, Playground & Celebrations)
+  {
+    id: 'life-graduate',
+    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    title: 'Young Pupil Nursery Graduate in Emerald & Gold Gown',
+    category: 'life-at-heritage',
+    caption: 'Celebrating early childhood milestone completion with diploma scroll and radiant joy.',
+    uploadedAt: '2026-10-16T11:00:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+  },
+  {
+    id: 'life-swings',
+    url: '/assets/schools/heritage-academy/classroom-expansion.jpg',
+    title: 'Playground Swings & Laughter During Morning Recess',
+    category: 'life-at-heritage',
+    caption: 'Children sharing moments of play, friendship, and everyday happiness on the school swings.',
+    uploadedAt: '2026-10-16T11:30:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+  },
+  {
+    id: 'life-dining',
+    url: '/assets/schools/heritage-academy/school-nutrition.jpg',
+    title: 'Fellowship Dining & Warm Meals Under Canopies',
+    category: 'life-at-heritage',
+    caption: 'Pupils gathered together enjoying warm midday porridge and nutritious lunches.',
+    uploadedAt: '2026-10-16T12:00:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+  },
+  {
+    id: 'life-slide',
+    url: '/assets/schools/heritage-academy/classroom-reading.jpg',
+    title: 'Playground Recreation & Childhood Activities',
+    category: 'life-at-heritage',
+    caption: 'Pupils enjoying outdoor play equipment and slides in the secure school courtyard.',
+    uploadedAt: '2026-10-16T12:30:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+  },
+  {
+    id: 'life-video-recess',
+    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    title: 'Playground Games & Children Joyful Recess Video',
+    category: 'life-at-heritage',
+    caption: 'Video highlight capturing children running, laughing, and playing together during break time.',
+    uploadedAt: '2026-10-16T13:00:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'video',
+    duration: '0:48',
+  },
+  {
+    id: 'life-teachers',
+    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    title: 'Dedicated Teachers in Yellow Victorious Heritage Shirts',
+    category: 'life-at-heritage',
+    caption: 'Loving educators and mentors smiling proudly in Victorious Heritage yellow team shirts.',
+    uploadedAt: '2026-10-16T13:30:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
   },
 ];
 

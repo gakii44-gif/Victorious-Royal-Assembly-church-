@@ -14,7 +14,9 @@ import {
   Sun,
   Smile,
   Award,
-  Film
+  Film,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { VRAILogo } from './VRAILogo';
 
@@ -41,8 +43,8 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
   onOpenDonateModal,
   className = '',
 }) => {
-  const { getPhoto, openUploadModal, openMultiUploadModal } = usePhotos();
-  const [lightboxItem, setLightboxItem] = useState<{ url?: string; title: string; subtitle: string; badge: string } | null>(null);
+  const { getPhoto, openUploadModal, openMultiUploadModal, removePhoto } = usePhotos();
+  const [lightboxItem, setLightboxItem] = useState<{ key: string; url?: string; title: string; subtitle: string; badge: string } | null>(null);
 
   // 6 specific mosaic tiles matching the exact composition in the user's screenshot
   const col1Item: MosaicItem = {
@@ -136,6 +138,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
             onClick={() =>
               setLightboxItem({
+                key: item.key,
                 url: photo.url,
                 title: item.title,
                 subtitle: item.subtitle,
@@ -148,6 +151,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
           <div
             onClick={() =>
               setLightboxItem({
+                key: item.key,
                 title: item.title,
                 subtitle: item.subtitle,
                 badge: item.badge,
@@ -208,23 +212,57 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
           </div>
         )}
 
-        {/* Hover Action Overlay: Upload Real Photo & Zoom */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3 z-20 backdrop-blur-2xs">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              openUploadModal(item.key, item.title);
-            }}
-            className="px-3 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-bold shadow-md hover:bg-stone-100 transition-colors flex items-center gap-1.5"
-            title="Upload real photograph for this slot"
-          >
-            <Camera className="w-3.5 h-3.5 text-emerald-800" />
-            <span>Upload Photo</span>
-          </button>
+        {/* Hover Action Overlay: Upload Real Photo, Replace, Delete & Zoom */}
+        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3 z-20 backdrop-blur-2xs">
+          {photo ? (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openUploadModal(item.key, item.title);
+                }}
+                className="px-2.5 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-bold shadow-md hover:bg-stone-100 transition-colors flex items-center gap-1.5"
+                title="Replace with another photo"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-emerald-800" />
+                <span>Replace</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm(`Reset this tile to the original illustration?`)) {
+                    removePhoto(item.key);
+                  }
+                }}
+                className="p-1.5 bg-rose-600/90 text-white rounded-lg hover:bg-rose-700 transition-colors"
+                title="Delete uploaded photo and reset tile"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openUploadModal(item.key, item.title);
+              }}
+              className="px-3 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-bold shadow-md hover:bg-stone-100 transition-colors flex items-center gap-1.5"
+              title="Upload real photograph for this slot"
+            >
+              <Camera className="w-3.5 h-3.5 text-emerald-800" />
+              <span>Upload Photo</span>
+            </button>
+          )}
 
           <button
+            type="button"
             onClick={() =>
               setLightboxItem({
+                key: item.key,
                 url: photo?.url,
                 title: item.title,
                 subtitle: item.subtitle,
@@ -353,7 +391,39 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentKey = lightboxItem.key;
+                    const currentTitle = lightboxItem.title;
+                    setLightboxItem(null);
+                    openUploadModal(currentKey, currentTitle);
+                  }}
+                  className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                  title="Upload real photograph or replace current image"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-lime-300" />
+                  <span>Replace Photo</span>
+                </button>
+
+                {getPhoto(lightboxItem.key) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Reset this tile to the original illustration?`)) {
+                        removePhoto(lightboxItem.key);
+                        setLightboxItem(null);
+                      }
+                    }}
+                    className="px-3 py-2 text-rose-300 hover:text-white hover:bg-rose-900/60 border border-rose-800/60 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                    title="Delete uploaded photo and reset tile"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Photo</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     setLightboxItem(null);

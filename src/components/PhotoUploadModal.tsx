@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, CheckCircle2, Trash2, Image as ImageIcon, Camera } from 'lucide-react';
+import { X, Upload, CheckCircle2, Trash2, Image as ImageIcon, Camera, RefreshCw } from 'lucide-react';
 import { usePhotos } from '../context/PhotoContext';
 
 export const PhotoUploadModal: React.FC = () => {
@@ -104,22 +104,23 @@ export const PhotoUploadModal: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 pt-1 border-t border-stone-100">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-xs text-emerald-800 font-semibold hover:underline"
+                  className="text-xs text-emerald-800 font-bold hover:underline flex items-center gap-1.5"
                 >
-                  Choose a different photo
+                  <RefreshCw className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Replace with a different photo</span>
                 </button>
                 {currentPhoto && (
                   <button
                     type="button"
                     onClick={handleRemoveExisting}
-                    className="text-xs text-rose-700 hover:text-rose-900 flex items-center gap-1 font-semibold"
+                    className="text-xs text-rose-700 hover:text-rose-900 flex items-center gap-1 font-semibold hover:bg-rose-50 px-2 py-1 rounded"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    Reset to Placeholder
+                    <span>Delete Photo (Reset)</span>
                   </button>
                 )}
               </div>

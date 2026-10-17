@@ -22,11 +22,19 @@ import {
   CheckCircle2,
   ArrowRight,
   Play,
+  Pause,
   Film,
-  Video
+  Video,
+  RefreshCw,
+  RotateCcw,
+  BookOpen,
+  Smile,
+  SlidersHorizontal,
+  Maximize2
 } from 'lucide-react';
 import { VRAILogo } from '../components/VRAILogo';
 import { LifeAtHeritageGallerySection } from '../components/LifeAtHeritageGallerySection';
+import { ReplaceMediaModal } from '../components/ReplaceMediaModal';
 
 interface GalleryViewProps {
   onNavigate: (view: NavView) => void;
@@ -39,82 +47,177 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
   onOpenAssetGuide,
   onOpenDonateModal,
 }) => {
-  const { galleryPhotos, openMultiUploadModal, removeGalleryPhoto } = usePhotos();
+  const { 
+    galleryPhotos, 
+    openMultiUploadModal, 
+    removeGalleryPhoto, 
+    updateGalleryPhoto, 
+    resetDefaultGalleryPhotos 
+  } = usePhotos();
+
+  // Active Section filter ('all' or one of the 5 specific sections)
   const [activeTab, setActiveTab] = useState<'all' | GalleryCategory>('all');
   const [mediaFilter, setMediaFilter] = useState<'all' | 'photo' | 'video'>('all');
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState<GalleryPhotoItem | null>(null);
+  const [replaceModalItem, setReplaceModalItem] = useState<GalleryPhotoItem | null>(null);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<GalleryPhotoItem | null>(null);
+  
+  // Track which video is currently playing inline inside a card preview
+  const [inlineVideoPlayingId, setInlineVideoPlayingId] = useState<string | null>(null);
 
-  const categories: { id: GalleryCategory; label: string; icon: React.ReactNode; desc: string }[] = [
+  // The 5 Exact Sections requested by the user
+  const sections: { 
+    id: GalleryCategory; 
+    label: string; 
+    shortLabel: string;
+    icon: React.ReactNode; 
+    desc: string;
+    badge: string;
+    accentBg: string;
+    accentText: string;
+    badgeBorder: string;
+  }[] = [
     { 
-      id: 'heritage', 
-      label: 'Life at Victorious Heritage', 
-      icon: <GraduationCap className="w-4 h-4 text-emerald-600" />,
-      desc: 'Pupils, classrooms, teachers, morning assembly, playtime, adult education, and school milestones in Juba.'
+      id: 'victorious-heritage', 
+      label: 'Victorious Heritage', 
+      shortLabel: 'Victorious Heritage',
+      icon: <BookOpen className="w-4 h-4 text-emerald-700" />,
+      badge: 'Nursery, Primary & Adult Ed',
+      desc: 'Classrooms, academic instruction, morning assembly, pupil nutrition porridge, handwriting, and adult literacy education in Juba.',
+      accentBg: 'bg-emerald-50',
+      accentText: 'text-emerald-900',
+      badgeBorder: 'border-emerald-200'
     },
     { 
       id: 'church', 
-      label: 'Church Photos & Videos', 
+      label: 'Church', 
+      shortLabel: 'Church',
       icon: <Church className="w-4 h-4 text-amber-600" />,
-      desc: 'Sunday celebration services, choir praise videos, Word of Faith altar ministry, communion, and healing miracles.'
+      badge: 'Worship & Faith Altar',
+      desc: 'Sunday celebration services, choir praise video clips, Word of Faith altar ministry, Holy Communion, and healing miracles.',
+      accentBg: 'bg-amber-50',
+      accentText: 'text-amber-900',
+      badgeBorder: 'border-amber-200'
     },
     { 
       id: 'women', 
-      label: 'Women Section Photos & Videos', 
+      label: 'Women', 
+      shortLabel: 'Women',
       icon: <Heart className="w-4 h-4 text-rose-500" />,
-      desc: 'Women’s Fellowship, anniversary print fabrics & attire, mothers prayer vigils, widow care and community relief.'
+      badge: 'Mothers & Fellowship',
+      desc: 'Women’s Fellowship gatherings, anniversary commemorative uniform fabrics, mothers intercessory vigils, and widow relief aid.',
+      accentBg: 'bg-rose-50',
+      accentText: 'text-rose-900',
+      badgeBorder: 'border-rose-200'
     },
     { 
       id: 'vocational', 
-      label: 'School Vocational Photos & Videos', 
+      label: 'Vocational', 
+      shortLabel: 'Vocational',
       icon: <Wrench className="w-4 h-4 text-sky-600" />,
-      desc: 'Tailoring & sewing machines, carpentry workshops, solar/electrical trades, artisan apprenticeships.'
+      badge: 'Technical Trades Centre',
+      desc: 'Hands-on training in heavy-duty tailoring, carpentry workbenches, solar technician electrical systems, and artisan starter toolkits.',
+      accentBg: 'bg-sky-50',
+      accentText: 'text-sky-900',
+      badgeBorder: 'border-sky-200'
+    },
+    { 
+      id: 'life-at-heritage', 
+      label: 'Life at Victorious Heritage', 
+      shortLabel: 'Life at Heritage',
+      icon: <Smile className="w-4 h-4 text-purple-600" />,
+      badge: 'Everyday Joy & Recess',
+      desc: 'Everyday pupil happiness: playground recess swings, water slides, canopy dining fellowship, and emerald & gold graduation cap celebrations.',
+      accentBg: 'bg-purple-50',
+      accentText: 'text-purple-900',
+      badgeBorder: 'border-purple-200'
     },
   ];
 
-  // Filtering by category & media type
-  const categoryFiltered = activeTab === 'all' 
-    ? galleryPhotos 
-    : galleryPhotos.filter((p) => p.category === activeTab);
+  // Map legacy 'heritage' to 'victorious-heritage' for seamless filtering
+  const isMatchCategory = (itemCategory: string, tab: string) => {
+    if (tab === 'all') return true;
+    if (tab === 'victorious-heritage' && (itemCategory === 'victorious-heritage' || itemCategory === 'heritage')) {
+      return true;
+    }
+    return itemCategory === tab;
+  };
 
-  const filteredPhotos = mediaFilter === 'all'
-    ? categoryFiltered
-    : categoryFiltered.filter((p) => (p.mediaType || 'photo') === mediaFilter);
-
-  const getCategoryMeta = (cat: GalleryCategory) => {
+  const getSectionMeta = (cat: string) => {
     switch (cat) {
+      case 'victorious-heritage':
       case 'heritage':
         return {
-          label: 'Life at Victorious Heritage',
+          id: 'victorious-heritage' as GalleryCategory,
+          label: 'Victorious Heritage',
+          shortLabel: 'Victorious Heritage',
+          badge: 'Nursery, Primary & Adult Ed',
           bg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
           dot: 'bg-emerald-600',
         };
       case 'church':
         return {
-          label: 'Church & Altar',
+          id: 'church' as GalleryCategory,
+          label: 'Church',
+          shortLabel: 'Church',
+          badge: 'Worship & Faith Altar',
           bg: 'bg-amber-50 text-amber-800 border-amber-200',
           dot: 'bg-amber-600',
         };
       case 'women':
         return {
-          label: 'Women Section',
+          id: 'women' as GalleryCategory,
+          label: 'Women',
+          shortLabel: 'Women',
+          badge: 'Women Fellowship & Widows',
           bg: 'bg-rose-50 text-rose-800 border-rose-200',
           dot: 'bg-rose-500',
         };
       case 'vocational':
         return {
-          label: 'School Vocational',
+          id: 'vocational' as GalleryCategory,
+          label: 'Vocational',
+          shortLabel: 'Vocational',
+          badge: 'Trades & Toolkits',
           bg: 'bg-sky-50 text-sky-800 border-sky-200',
           dot: 'bg-sky-600',
+        };
+      case 'life-at-heritage':
+        return {
+          id: 'life-at-heritage' as GalleryCategory,
+          label: 'Life at Victorious Heritage',
+          shortLabel: 'Life at Heritage',
+          badge: 'Joy & Milestones',
+          bg: 'bg-purple-50 text-purple-800 border-purple-200',
+          dot: 'bg-purple-600',
+        };
+      default:
+        return {
+          id: 'victorious-heritage' as GalleryCategory,
+          label: 'Victorious Heritage',
+          shortLabel: 'Victorious Heritage',
+          badge: 'School & Ed',
+          bg: 'bg-stone-50 text-stone-800 border-stone-200',
+          dot: 'bg-stone-600',
         };
     }
   };
 
-  const getCategoryCount = (cat: GalleryCategory) => {
-    return galleryPhotos.filter((p) => p.category === cat).length;
+  const getCategoryCount = (tabId: string) => {
+    return galleryPhotos.filter((p) => isMatchCategory(p.category, tabId)).length;
   };
 
-  const totalPhotosCount = galleryPhotos.filter((p) => (p.mediaType || 'photo') === 'photo').length;
-  const totalVideosCount = galleryPhotos.filter((p) => p.mediaType === 'video').length;
+  // Filtered by selected section tab
+  const sectionFilteredPhotos = activeTab === 'all'
+    ? galleryPhotos
+    : galleryPhotos.filter((p) => isMatchCategory(p.category, activeTab));
+
+  // Filtered by media format (All / Photos / Videos)
+  const filteredPhotos = mediaFilter === 'all'
+    ? sectionFilteredPhotos
+    : sectionFilteredPhotos.filter((p) => (p.mediaType || 'photo') === mediaFilter);
+
+  const activeSectionInfo = sections.find((s) => s.id === activeTab);
 
   return (
     <div className="space-y-12 pb-24">
@@ -140,27 +243,30 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-2 max-w-3xl">
               <h1 className="text-3xl sm:text-5xl font-extrabold text-white font-heading tracking-tight">
-                Church &amp; School Photo &amp; Video Gallery
+                Church &amp; School Photo &amp; Video Galleries
               </h1>
               <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
-                Explore verified moments of faith, education, and vocational empowerment from <strong>Victorious Royal Assembly International</strong> and <strong>Victorious Heritage Model Nursery &amp; Primary School &amp; Adult Education Centre</strong> in Juba, South Sudan.
+                Categorized into 5 dedicated archives: <strong>Victorious Heritage</strong>, <strong>Church</strong>, <strong>Women</strong>, <strong>Vocational</strong>, and <strong>Life at Victorious Heritage</strong>. Preview video recordings, inspect high-resolution photographs, or replace and manage individual media items.
               </p>
             </div>
 
-            {/* Direct Multi Upload Trigger for Both Photos & Videos */}
-            <button
-              onClick={() => openMultiUploadModal(activeTab === 'all' ? 'heritage' : activeTab)}
-              className="px-5 py-3 bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2.5 shrink-0 hover:scale-[1.02]"
-            >
-              <Upload className="w-4 h-4 text-lime-300" />
-              <span>Upload Photos &amp; Videos</span>
-            </button>
+            {/* Direct Multi Upload Trigger */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
+                className="px-5 py-3 bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2.5 hover:scale-[1.02]"
+              >
+                <Upload className="w-4 h-4 text-lime-300" />
+                <span>Upload Photos &amp; Videos</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
+        
         {/* Verification Policy Banner */}
         <div className="p-4 bg-white rounded-xl border border-stone-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -169,21 +275,21 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900">
-                Authentic Photographic &amp; Video Integrity Standard
+                Categorized Ministry &amp; School Media Integrity Standard
               </p>
               <p className="text-[11px] text-stone-600">
-                This website features exclusively real photographs and video recordings from church and school activities. Uploaded media is saved to the verified archives.
+                Every photo and video belongs to its verified department in Juba. Use <strong>Replace</strong> to update misplaced photos, change categories, or swap files anytime.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-xs shrink-0">
             <button
-              onClick={() => openMultiUploadModal()}
+              onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
               className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1.5 underline underline-offset-4"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Upload Media Batch</span>
+              <span>Add to Gallery</span>
             </button>
             <span className="text-stone-300">|</span>
             <button
@@ -195,18 +301,12 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
           </div>
         </div>
 
-        {/* FEATURED SEGMENT: LIFE AT VICTORIOUS HERITAGE MOSAIC */}
-        <LifeAtHeritageGallerySection
-          onNavigate={onNavigate}
-          onOpenDonateModal={onOpenDonateModal}
-        />
-
-        {/* 4-Part Category Tabs & Media Type Filters */}
-        <div className="space-y-4 pt-4 border-t border-stone-200">
+        {/* 5-SECTION GALLERY TABS SWITCHER */}
+        <div className="space-y-4 pt-2 border-t border-stone-200">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-xs uppercase tracking-widest font-bold text-stone-500 flex items-center gap-2 font-mono">
-              <Filter className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Browse by Category &amp; Format</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Select Gallery Section</span>
             </h2>
 
             {/* Media Type Filter (All / Photos / Videos) */}
@@ -219,7 +319,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                     : 'text-stone-600 hover:text-slate-900'
                 }`}
               >
-                All Media ({categoryFiltered.length})
+                All Media ({sectionFilteredPhotos.length})
               </button>
               <button
                 onClick={() => setMediaFilter('photo')}
@@ -230,7 +330,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                 }`}
               >
                 <Camera className="w-3 h-3 text-emerald-700" />
-                <span>Photos ({categoryFiltered.filter(p => (p.mediaType || 'photo') === 'photo').length})</span>
+                <span>Photos ({sectionFilteredPhotos.filter(p => (p.mediaType || 'photo') === 'photo').length})</span>
               </button>
               <button
                 onClick={() => setMediaFilter('video')}
@@ -241,22 +341,22 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                 }`}
               >
                 <Film className="w-3 h-3 text-amber-600" />
-                <span>Videos ({categoryFiltered.filter(p => p.mediaType === 'video').length})</span>
+                <span>Videos ({sectionFilteredPhotos.filter(p => p.mediaType === 'video').length})</span>
               </button>
             </div>
           </div>
 
-          {/* Category Tabs */}
+          {/* 5 Distinct Section Tabs (+ All) */}
           <div className="flex flex-wrap gap-2 border-b border-stone-200 pb-4">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                 activeTab === 'all'
                   ? 'bg-stone-900 text-white shadow-sm'
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-slate-900'
               }`}
             >
-              <span>All Categories</span>
+              <span>All Galleries</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
                 activeTab === 'all' ? 'bg-stone-700 text-stone-200' : 'bg-stone-200 text-stone-700'
               }`}>
@@ -264,21 +364,21 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
               </span>
             </button>
 
-            {categories.map((cat) => {
-              const isSelected = activeTab === cat.id;
-              const count = getCategoryCount(cat.id);
+            {sections.map((section) => {
+              const isSelected = activeTab === section.id;
+              const count = getCategoryCount(section.id);
               return (
                 <button
-                  key={cat.id}
-                  onClick={() => setActiveTab(cat.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  key={section.id}
+                  onClick={() => setActiveTab(section.id)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                     isSelected
                       ? 'bg-emerald-800 text-white shadow-sm'
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-slate-900'
                   }`}
                 >
-                  {cat.icon}
-                  <span>{cat.label}</span>
+                  {section.icon}
+                  <span>{section.label}</span>
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
                     isSelected ? 'bg-emerald-950/80 text-emerald-200' : 'bg-stone-200 text-stone-700'
                   }`}>
@@ -289,190 +389,370 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
             })}
           </div>
 
-          {/* Active Category Description Bar */}
-          {activeTab !== 'all' && (
-            <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-100 text-xs text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <p className="font-medium">
-                {categories.find((c) => c.id === activeTab)?.desc}
+          {/* Active Section Header Card */}
+          {activeSectionInfo ? (
+            <div className={`p-5 rounded-2xl border ${activeSectionInfo.badgeBorder} ${activeSectionInfo.accentBg} flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-200`}>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 bg-white rounded-lg shadow-2xs">
+                    {activeSectionInfo.icon}
+                  </span>
+                  <h3 className="font-extrabold text-base text-slate-900 font-heading">
+                    {activeSectionInfo.label} Gallery
+                  </h3>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-white rounded-full border border-stone-200 text-stone-600">
+                    {activeSectionInfo.badge}
+                  </span>
+                </div>
+                <p className="text-xs text-stone-700 max-w-2xl leading-relaxed">
+                  {activeSectionInfo.desc}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => openMultiUploadModal(activeSectionInfo.id)}
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5 text-lime-300" />
+                  <span>Upload to {activeSectionInfo.label}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p>
+                Viewing combined media across all 5 sections. Filter by tab above to focus on a specific ministry or school archive.
               </p>
               <button
-                onClick={() => openMultiUploadModal(activeTab)}
-                className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-bold text-[11px] shrink-0 flex items-center gap-1.5 self-start sm:self-center transition-colors"
+                onClick={() => openMultiUploadModal('victorious-heritage')}
+                className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-bold text-xs shrink-0 inline-flex items-center gap-1.5"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Upload to {categories.find((c) => c.id === activeTab)?.label}</span>
+                <Upload className="w-3.5 h-3.5 text-lime-300" />
+                <span>Upload Media</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Gallery Grid of Photos & Videos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPhotos.map((item) => {
-            const meta = getCategoryMeta(item.category);
-            const isUserItem = item.isUserUploaded;
-            const isVideo = item.mediaType === 'video';
+        {/* If 'Life at Victorious Heritage' or 'All' is active, showcase the 4-column Bento mosaic segment */}
+        {(activeTab === 'all' || activeTab === 'life-at-heritage') && (
+          <div className="pt-2">
+            <LifeAtHeritageGallerySection
+              onNavigate={onNavigate}
+              onOpenDonateModal={onOpenDonateModal}
+            />
+          </div>
+        )}
 
-            return (
-              <div
-                key={item.id}
-                className="group bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
+        {/* GRID OF INDIVIDUAL MEDIA ITEMS (Photos & Video Previews) */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+              <span>{activeSectionInfo ? `${activeSectionInfo.label} Media Items` : 'All Media Items'}</span>
+              <span className="text-stone-400 font-normal text-xs font-mono">({filteredPhotos.length})</span>
+            </h3>
+
+            {galleryPhotos.length < 5 && (
+              <button
+                onClick={resetDefaultGalleryPhotos}
+                className="text-xs text-stone-500 hover:text-emerald-800 font-semibold flex items-center gap-1"
+                title="Restore original sample gallery archives"
               >
-                {/* Photo or Video Thumbnail Container */}
-                <div 
-                  className="relative aspect-4/3 overflow-hidden bg-stone-900 cursor-pointer"
-                  onClick={() => setActiveLightboxPhoto(item)}
+                <RotateCcw className="w-3 h-3" />
+                <span>Restore Sample Archives</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredPhotos.map((item) => {
+              const meta = getSectionMeta(item.category);
+              const isUserItem = item.isUserUploaded;
+              const isVideo = item.mediaType === 'video';
+              const isInlinePlaying = inlineVideoPlayingId === item.id;
+
+              return (
+                <div
+                  key={item.id}
+                  className="group bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
                 >
-                  {isUserItem ? (
-                    <div className="w-full h-full relative">
-                      <img
-                        src={item.url}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {isVideo && (
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full bg-amber-600/90 hover:bg-amber-500 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                            <Play className="w-5 h-5 ml-0.5 fill-current" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    /* Tasteful Branded Placeholder */
-                    <div className="w-full h-full bg-gradient-to-br from-emerald-900 via-stone-900 to-emerald-950 p-6 flex flex-col items-center justify-between text-center relative overflow-hidden group-hover:opacity-95 transition-opacity">
-                      <div
-                        className="absolute inset-0 opacity-[0.08] pointer-events-none"
-                        style={{
-                          backgroundImage: `radial-gradient(circle at 50% 50%, #84cc16 1.5px, transparent 1.5px)`,
-                          backgroundSize: '18px 18px',
-                        }}
-                      />
-
-                      <div className="relative z-10 w-full flex items-center justify-between text-[10px] text-lime-400 font-semibold tracking-wider uppercase">
-                        <span>{meta.label}</span>
-                        <span className="bg-stone-800/80 text-stone-300 px-1.5 py-0.5 rounded border border-stone-700">
-                          {isVideo ? 'Video Clip' : 'Photo'}
-                        </span>
-                      </div>
-
-                      <div className="relative z-10 flex flex-col items-center gap-2 my-auto">
-                        {isVideo ? (
-                          <div className="w-12 h-12 rounded-full bg-amber-500/30 border border-amber-400/50 flex items-center justify-center text-amber-300 shadow-md">
-                            <Play className="w-6 h-6 ml-0.5 fill-current" />
-                          </div>
-                        ) : (
-                          <VRAILogo size={40} />
-                        )}
-                        <p className="text-white text-xs font-bold leading-snug max-w-[200px]">
-                          {item.title}
-                        </p>
-                      </div>
-
-                      <div className="relative z-10 w-full pt-1 border-t border-white/10 text-[10px] text-stone-300 flex items-center justify-center gap-1 font-medium">
-                        {isVideo ? <Film className="w-3 h-3 text-amber-400" /> : <Camera className="w-3 h-3 text-lime-400" />}
-                        <span>Click to play / upload</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Format Badge (Photo vs Video) */}
-                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border backdrop-blur-md shadow-xs ${
-                      isVideo 
-                        ? 'bg-amber-600/90 text-white border-amber-400/50' 
-                        : 'bg-black/60 text-white border-white/20'
-                    }`}>
-                      {isVideo ? (
-                        <>
-                          <Film className="w-3 h-3" />
-                          <span>Video</span>
-                        </>
-                      ) : (
-                        <>
-                          <Camera className="w-3 h-3" />
-                          <span>Photo</span>
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Duration Badge for Videos */}
-                  {isVideo && item.duration && (
-                    <div className="absolute bottom-2.5 right-2.5 z-10">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-black/80 text-white border border-white/20 backdrop-blur-xs">
-                        {item.duration}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Content Info */}
-                <div className="p-4 flex flex-col justify-between flex-1 space-y-3">
-                  <div className="space-y-1">
-                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${meta.bg}`}>
-                      {meta.label}
-                    </span>
-                    <h3 className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-emerald-800 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
-                      {item.caption}
-                    </p>
-                  </div>
-
-                  {/* Bottom Action Footer */}
-                  <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-stone-400" />
-                      <span>{new Date(item.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    </span>
-
-                    <div className="flex items-center gap-2">
-                      {isUserItem && (
+                  {/* Photo or Video Thumbnail Container with Video Preview Support */}
+                  <div className="relative aspect-4/3 overflow-hidden bg-stone-900">
+                    
+                    {/* INLINE VIDEO PREVIEW PLAYER */}
+                    {isVideo && isInlinePlaying ? (
+                      <div className="w-full h-full relative bg-black flex items-center justify-center">
+                        <video
+                          src={item.videoUrl || item.url}
+                          poster={item.url}
+                          controls
+                          autoPlay
+                          playsInline
+                          className="w-full h-full object-contain"
+                        />
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm(`Remove this ${isVideo ? 'video' : 'photo'} from gallery?`)) {
-                              removeGalleryPhoto(item.id);
+                            setInlineVideoPlayingId(null);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-black/80 hover:bg-black text-white rounded-md z-20"
+                          title="Close inline video preview"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : isUserItem ? (
+                      /* USER UPLOADED MEDIA */
+                      <div 
+                        className="w-full h-full relative cursor-pointer"
+                        onClick={() => setActiveLightboxPhoto(item)}
+                      >
+                        <img
+                          src={item.url}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+
+                        {/* Interactive Play Button for Video Previews */}
+                        {isVideo && (
+                          <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center gap-2 group-hover:bg-black/25 transition-colors">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.videoUrl) {
+                                  setInlineVideoPlayingId(item.id);
+                                } else {
+                                  setActiveLightboxPhoto(item);
+                                }
+                              }}
+                              className="w-13 h-13 rounded-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-all"
+                              title="Click to preview video clip"
+                            >
+                              <Play className="w-6 h-6 ml-0.5 fill-current" />
+                            </button>
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/75 text-amber-300 tracking-wide backdrop-blur-xs">
+                              Preview Video Clip
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* HIGH-FIDELITY BRANDED ARCHIVE PLACEHOLDER */
+                      <div 
+                        className="w-full h-full bg-gradient-to-br from-emerald-950 via-stone-900 to-emerald-900 p-5 flex flex-col items-center justify-between text-center relative overflow-hidden cursor-pointer group-hover:opacity-95 transition-opacity"
+                        onClick={() => setActiveLightboxPhoto(item)}
+                      >
+                        <div
+                          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+                          style={{
+                            backgroundImage: `radial-gradient(circle at 50% 50%, #84cc16 1.5px, transparent 1.5px)`,
+                            backgroundSize: '18px 18px',
+                          }}
+                        />
+
+                        <div className="relative z-10 w-full flex items-center justify-between text-[10px] text-lime-400 font-semibold tracking-wider uppercase">
+                          <span>{meta.shortLabel}</span>
+                          <span className="bg-stone-800/80 text-stone-300 px-1.5 py-0.5 rounded border border-stone-700">
+                            {isVideo ? 'Video Preview' : 'Photo'}
+                          </span>
+                        </div>
+
+                        <div className="relative z-10 flex flex-col items-center gap-2 my-auto">
+                          {isVideo ? (
+                            <div className="w-12 h-12 rounded-full bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-amber-300 shadow-md transform group-hover:scale-110 transition-transform">
+                              <Play className="w-6 h-6 ml-0.5 fill-current" />
+                            </div>
+                          ) : (
+                            <VRAILogo size={38} />
+                          )}
+                          <p className="text-white text-xs font-bold leading-snug line-clamp-2 px-1">
+                            {item.title}
+                          </p>
+                        </div>
+
+                        <div className="relative z-10 w-full pt-1.5 border-t border-white/10 text-[10px] text-stone-300 flex items-center justify-center gap-1 font-medium">
+                          {isVideo ? <Film className="w-3 h-3 text-amber-400" /> : <Camera className="w-3 h-3 text-lime-400" />}
+                          <span>{isVideo ? 'Click to preview video' : 'Click to inspect / replace'}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Format Badge (Photo vs Video Preview) */}
+                    <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 pointer-events-none">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border backdrop-blur-md shadow-xs ${
+                        isVideo 
+                          ? 'bg-amber-600/90 text-white border-amber-400/50' 
+                          : 'bg-black/65 text-white border-white/20'
+                      }`}>
+                        {isVideo ? (
+                          <>
+                            <Film className="w-3 h-3" />
+                            <span>Video</span>
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="w-3 h-3" />
+                            <span>Photo</span>
+                          </>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Duration Badge for Videos */}
+                    {isVideo && item.duration && (
+                      <div className="absolute bottom-2.5 right-2.5 z-10 pointer-events-none">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-black/85 text-amber-300 border border-white/20 backdrop-blur-xs">
+                          {item.duration}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content Info */}
+                  <div className="p-4 flex flex-col justify-between flex-1 space-y-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${meta.bg}`}>
+                          {meta.label}
+                        </span>
+                        {isVideo && (
+                          <span className="text-[10px] text-amber-800 font-bold font-mono">
+                            {item.duration || 'Video'}
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-emerald-800 transition-colors">
+                        {item.title}
+                      </h4>
+                      <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
+                        {item.caption}
+                      </p>
+                    </div>
+
+                    {/* ACTION INTERFACE: REPLACE, DELETE, QUICK MOVE & PREVIEW */}
+                    <div className="space-y-2 pt-2 border-t border-stone-100">
+                      
+                      {/* Top Row: Quick Move Section Dropdown ("in case it was not correctly placed") */}
+                      <div className="flex items-center justify-between text-[10px] text-stone-500 bg-stone-50 p-1.5 rounded-lg border border-stone-200/80">
+                        <span className="font-semibold text-stone-600 pl-1 shrink-0">Section:</span>
+                        <select
+                          value={item.category === 'heritage' ? 'victorious-heritage' : item.category}
+                          onChange={(e) => {
+                            const newCategory = e.target.value as GalleryCategory;
+                            updateGalleryPhoto(item.id, { category: newCategory });
+                          }}
+                          className="bg-white border border-stone-200 rounded px-1.5 py-0.5 font-bold text-slate-900 focus:outline-hidden text-[10px] cursor-pointer max-w-[170px] truncate"
+                          title="Move this item to another section"
+                        >
+                          <option value="victorious-heritage">Victorious Heritage</option>
+                          <option value="church">Church</option>
+                          <option value="women">Women</option>
+                          <option value="vocational">Vocational</option>
+                          <option value="life-at-heritage">Life at Victorious Heritage</option>
+                        </select>
+                      </div>
+
+                      {/* Bottom Row: Replace & Delete Controls */}
+                      <div className="flex items-center justify-between gap-1 pt-0.5">
+                        <div className="flex items-center gap-1.5">
+                          {/* Replace Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReplaceModalItem(item);
+                            }}
+                            className="px-2.5 py-1.5 text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1.5"
+                            title="Replace this media or swap with new upload"
+                          >
+                            <RefreshCw className="w-3 h-3 text-emerald-700" />
+                            <span>Replace</span>
+                          </button>
+
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirmItem(item);
+                            }}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+                            title={`Delete ${isVideo ? 'video' : 'photo'} from gallery`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* View or Preview Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isVideo && item.videoUrl) {
+                              setInlineVideoPlayingId(inlineVideoPlayingId === item.id ? null : item.id);
+                            } else {
+                              setActiveLightboxPhoto(item);
                             }
                           }}
-                          className="text-stone-400 hover:text-red-600 p-1 transition-colors"
-                          title="Delete media item"
+                          className="px-2.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg font-bold text-xs transition-colors flex items-center gap-1 shrink-0"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          {isVideo ? (
+                            isInlinePlaying ? (
+                              <>
+                                <Pause className="w-3 h-3 text-amber-300" />
+                                <span>Pause</span>
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3 h-3 text-amber-300 fill-current" />
+                                <span>Preview</span>
+                              </>
+                            )
+                          ) : (
+                            <>
+                              <span>View</span>
+                              <ArrowRight className="w-3 h-3 text-stone-400" />
+                            </>
+                          )}
                         </button>
-                      )}
-                      <button
-                        onClick={() => setActiveLightboxPhoto(item)}
-                        className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1 text-[11px]"
-                      >
-                        {isVideo ? 'Play Video' : 'View Photo'}
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Empty State */}
         {filteredPhotos.length === 0 && (
           <div className="p-12 text-center bg-white rounded-2xl border border-stone-200 space-y-3">
             <Film className="w-10 h-10 text-stone-400 mx-auto" />
-            <h4 className="font-bold text-slate-900 text-sm">No media items found in this section</h4>
+            <h4 className="font-bold text-slate-900 text-sm">
+              No media items found in {activeSectionInfo ? activeSectionInfo.label : 'this view'}
+            </h4>
             <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              Be the first to upload videos or photographs for this section.
+              Be the first to upload photographs or video clips for this section.
             </p>
-            <button
-              onClick={() => openMultiUploadModal(activeTab === 'all' ? 'heritage' : activeTab)}
-              className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Upload Photos &amp; Videos Now</span>
-            </button>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
+                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5"
+              >
+                <Upload className="w-3.5 h-3.5 text-lime-300" />
+                <span>Upload Now</span>
+              </button>
+              <button
+                onClick={resetDefaultGalleryPhotos}
+                className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restore Sample Items</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -510,7 +790,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
         </section>
       </div>
 
-      {/* Interactive Lightbox Modal for Photos & Videos */}
+      {/* FULLSCREEN LIGHTBOX & VIDEO PREVIEW MODAL */}
       {activeLightboxPhoto && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
@@ -524,7 +804,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
             <div className="px-6 py-3.5 bg-stone-900 text-white flex items-center justify-between border-b border-stone-800">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-lime-400 uppercase tracking-wider">
-                  {getCategoryMeta(activeLightboxPhoto.category).label}
+                  {getSectionMeta(activeLightboxPhoto.category).label}
                 </span>
                 <span className="text-stone-600">·</span>
                 <span className="text-xs text-stone-300 truncate max-w-xs sm:max-w-md">
@@ -539,7 +819,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
               </button>
             </div>
 
-            {/* Lightbox Media Player (Video or Photo) */}
+            {/* Video Player or High-Res Photo View */}
             <div className="relative aspect-video max-h-[65vh] bg-stone-950 flex items-center justify-center overflow-hidden">
               {activeLightboxPhoto.mediaType === 'video' ? (
                 activeLightboxPhoto.videoUrl ? (
@@ -558,16 +838,19 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                     </div>
                     <h4 className="font-bold text-lg">{activeLightboxPhoto.title}</h4>
                     <p className="text-xs text-stone-300">{activeLightboxPhoto.caption}</p>
+                    <div className="p-2.5 bg-amber-950/60 border border-amber-800/60 rounded-xl text-amber-200 text-xs">
+                      Duration: <strong>{activeLightboxPhoto.duration || 'Short clip'}</strong>
+                    </div>
                     <button
                       onClick={() => {
-                        const cat = activeLightboxPhoto.category;
+                        const current = activeLightboxPhoto;
                         setActiveLightboxPhoto(null);
-                        openMultiUploadModal(cat);
+                        setReplaceModalItem(current);
                       }}
                       className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5"
                     >
                       <Upload className="w-3.5 h-3.5 text-lime-300" />
-                      <span>Upload Video Clip (.mp4, .mov, .webm)</span>
+                      <span>Upload / Replace with Video File</span>
                     </button>
                   </div>
                 )
@@ -595,34 +878,156 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
               )}
             </div>
 
-            {/* Lightbox Footer Details & Controls */}
+            {/* Lightbox Footer Details & Action Controls */}
             <div className="p-5 bg-stone-50 border-t border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-stone-600">
-              <div>
+              <div className="space-y-0.5">
                 <p className="font-semibold text-slate-900 text-sm flex items-center gap-2">
                   <span>{activeLightboxPhoto.title}</span>
                   {activeLightboxPhoto.mediaType === 'video' && (
                     <span className="px-2 py-0.5 text-[10px] bg-amber-100 text-amber-900 rounded font-bold">
-                      Video Clip
+                      Video Preview ({activeLightboxPhoto.duration || 'Clip'})
                     </span>
                   )}
                 </p>
-                <p className="text-stone-500 mt-0.5">
+                <p className="text-stone-500">
                   {activeLightboxPhoto.caption}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              {/* Individual Media Action Interface: Quick Move, Replace & Delete */}
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {/* Re-categorize Dropdown ("incase its not correct placed") */}
+                <div className="flex items-center gap-1.5 bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs">
+                  <span className="text-[11px] font-semibold text-stone-500">Section:</span>
+                  <select
+                    value={activeLightboxPhoto.category === 'heritage' ? 'victorious-heritage' : activeLightboxPhoto.category}
+                    onChange={(e) => {
+                      const newCat = e.target.value as GalleryCategory;
+                      updateGalleryPhoto(activeLightboxPhoto.id, { category: newCat });
+                      setActiveLightboxPhoto({ ...activeLightboxPhoto, category: newCat });
+                    }}
+                    className="bg-transparent font-bold text-slate-900 focus:outline-hidden text-xs cursor-pointer"
+                  >
+                    <option value="victorious-heritage">Victorious Heritage</option>
+                    <option value="church">Church</option>
+                    <option value="women">Women</option>
+                    <option value="vocational">Vocational</option>
+                    <option value="life-at-heritage">Life at Victorious Heritage</option>
+                  </select>
+                </div>
+
+                {/* Replace Button */}
                 <button
                   type="button"
                   onClick={() => {
-                    const cat = activeLightboxPhoto.category;
+                    const current = activeLightboxPhoto;
                     setActiveLightboxPhoto(null);
-                    openMultiUploadModal(cat);
+                    setReplaceModalItem(current);
                   }}
-                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                  title="Replace with new photo or video"
                 >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Upload Media for {getCategoryMeta(activeLightboxPhoto.category).label}</span>
+                  <RefreshCw className="w-3.5 h-3.5 text-lime-300" />
+                  <span>Replace</span>
+                </button>
+
+                {/* Delete Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = activeLightboxPhoto;
+                    setActiveLightboxPhoto(null);
+                    setDeleteConfirmItem(current);
+                  }}
+                  className="px-3 py-2 text-rose-700 hover:text-rose-900 hover:bg-rose-100/70 border border-rose-200 rounded-lg font-bold transition-colors flex items-center gap-1"
+                  title="Delete from gallery"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REPLACE MEDIA MODAL */}
+      <ReplaceMediaModal
+        isOpen={!!replaceModalItem}
+        item={replaceModalItem}
+        onClose={() => setReplaceModalItem(null)}
+        onDeleted={(id) => {
+          if (activeLightboxPhoto?.id === id) setActiveLightboxPhoto(null);
+        }}
+      />
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteConfirmItem && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setDeleteConfirmItem(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-stone-200 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 text-rose-700">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-rose-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Delete {deleteConfirmItem.mediaType === 'video' ? 'Video' : 'Photo'}?
+                </h3>
+                <p className="text-[11px] text-stone-500">
+                  Section: {getSectionMeta(deleteConfirmItem.category).label}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-700 space-y-1">
+              <p className="font-bold text-slate-900">{deleteConfirmItem.title}</p>
+              <p className="text-[11px] text-stone-500 line-clamp-2">{deleteConfirmItem.caption}</p>
+            </div>
+
+            <p className="text-xs text-stone-600">
+              Are you sure you want to remove this item? If it was placed in the wrong section, you can also use <strong>Replace</strong> to move it instead of deleting.
+            </p>
+
+            <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => {
+                  const item = deleteConfirmItem;
+                  setDeleteConfirmItem(null);
+                  setReplaceModalItem(item);
+                }}
+                className="text-xs font-bold text-emerald-800 hover:underline"
+              >
+                Change section instead &rarr;
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmItem(null)}
+                  className="px-3.5 py-2 text-stone-600 hover:text-stone-900 text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeGalleryPhoto(deleteConfirmItem.id);
+                    if (activeLightboxPhoto?.id === deleteConfirmItem.id) {
+                      setActiveLightboxPhoto(null);
+                    }
+                    setDeleteConfirmItem(null);
+                  }}
+                  className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Confirm Delete</span>
                 </button>
               </div>
             </div>
