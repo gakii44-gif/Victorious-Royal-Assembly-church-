@@ -1,5 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { saveMediaFile, getMediaFile, deleteMediaFile, generateVideoThumbnail } from '../utils/mediaStorage';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { 
+  saveMediaFile, 
+  getMediaFile, 
+  deleteMediaFile, 
+  getAllMediaBlobKeys,
+  saveGalleryItemsToIDB, 
+  loadGalleryItemsFromIDB, 
+  saveSlotPhotosToIDB, 
+  loadSlotPhotosFromIDB,
+  createCompactThumbnail,
+  generateVideoThumbnail 
+} from '../utils/mediaStorage';
 
 export type GalleryCategory = 
   | 'victorious-heritage' 
@@ -12,7 +23,7 @@ export type MediaType = 'photo' | 'video';
 
 export interface GalleryPhotoItem {
   id: string;
-  url: string; // Image URL/DataURL or Video Poster Thumbnail
+  url: string; // Image URL/ObjectURL or Video Poster Thumbnail
   title: string;
   category: GalleryCategory;
   caption?: string;
@@ -69,6 +80,9 @@ interface PhotoContextType {
   openMultiUploadModal: (defaultCategory?: GalleryCategory) => void;
   closeMultiUploadModal: () => void;
   multiUploadDefaultCategory: GalleryCategory;
+
+  // Storage hydration state
+  isStorageReady: boolean;
 }
 
 const PhotoContext = createContext<PhotoContextType | undefined>(undefined);
@@ -148,102 +162,93 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     title: 'Healing & Deliverance Altar Ministry',
     category: 'church',
     caption: 'A.k.a Word of Faith Healing & Deliverance Ministry Int’l — Altar intercession and divine restoration in Juba.',
-    uploadedAt: '2026-10-06T11:30:00.000Z',
+    uploadedAt: '2026-10-06T11:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
   {
     id: 'church-communion',
-    url: '/assets/church/services/midweek-communion.jpg',
-    title: 'Wednesday Mid-Week Communion Service',
+    url: '/assets/church/services/sunday-worship.jpg',
+    title: 'Holy Communion & Covenant Service',
     category: 'church',
-    caption: 'Believers taking the holy communion table during our 5:00 PM Wednesday mid-week service.',
-    uploadedAt: '2026-10-07T17:30:00.000Z',
+    caption: 'Breaking bread and receiving covenant blessings at the altar on former Nilepet Road, Tongping.',
+    uploadedAt: '2026-10-07T11:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
   {
     id: 'church-video-sample',
-    url: '/assets/church/services/sunday-worship.jpg',
-    title: 'Sunday Celebration Choir Praise & Anointing Video',
+    url: '/assets/church/services/hero-church.jpg',
+    title: 'Anointed Worship & Choir Praise Video',
     category: 'church',
-    caption: 'Live praise and worship service with choir and congregation in Juba, South Sudan.',
-    uploadedAt: '2026-10-08T10:45:00.000Z',
+    caption: 'Video clip of the choir leading the assembly in uplifting African gospel worship.',
+    uploadedAt: '2026-10-08T10:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'video',
-    duration: '2:15',
-  },
-  {
-    id: 'church-convocation',
-    url: '/assets/church/outreach/convocation-ceremony.jpg',
-    title: 'Solemn Leadership & Convocation Service',
-    category: 'church',
-    caption: 'Academic regalia ceremony honoring Christian educators, missionaries, and community pioneers in Juba.',
-    uploadedAt: '2026-10-08T15:00:00.000Z',
-    isUserUploaded: false,
-    mediaType: 'photo',
+    duration: '1:45',
   },
 
   // 3. Women Section Photos & Videos
   {
     id: 'women-anniversary',
-    url: '/assets/church/outreach/womens-fellowship.jpg',
-    title: 'Women’s Fellowship in Custom Anniversary Uniform',
+    url: '/assets/church/fellowships/women-fellowship.jpg',
+    title: 'Women Fellowship Annual Anniversary',
     category: 'women',
-    caption: 'Mothers and sisters dressed in vibrant custom church anniversary attire for praise and fellowship.',
-    uploadedAt: '2026-10-09T10:30:00.000Z',
+    caption: 'Sisters dressed in matching African print commemorative fabrics celebrating grace and unity.',
+    uploadedAt: '2026-10-09T14:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
   {
     id: 'women-prayer',
-    url: '/assets/church/outreach/womens-prayer-circle.jpg',
-    title: 'Mothers Intercessory Altar & Prayer Circle',
+    url: '/assets/church/fellowships/women-fellowship.jpg',
+    title: 'Mothers Intercessory Vigil & Prayer Altar',
     category: 'women',
-    caption: 'Monthly dedicated prayer vigil for families, children in South Sudan, and missionary breakthroughs.',
-    uploadedAt: '2026-10-10T11:00:00.000Z',
+    caption: 'Faithful women interceding for families, children, church growth, and peace in South Sudan.',
+    uploadedAt: '2026-10-10T16:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
   {
-    id: 'women-widow-relief',
-    url: '/assets/church/outreach/womens-relief.jpg',
+    id: 'women-widows',
+    url: '/assets/church/fellowships/women-fellowship.jpg',
     title: 'Widow Support & Food Basket Distribution',
     category: 'women',
-    caption: 'Compassion ministry outreach delivering dry food rations, cooking oil, and counseling to vulnerable widows.',
-    uploadedAt: '2026-10-11T13:45:00.000Z',
+    caption: 'Empowering vulnerable women and widows with essential food grain, cooking oil, and fellowship support.',
+    uploadedAt: '2026-10-11T15:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
   {
-    id: 'women-fabric',
-    url: '/assets/church/outreach/womens-fabric-details.jpg',
-    title: 'Church Commemorative Print Fabric Patterns',
+    id: 'women-video-sample',
+    url: '/assets/church/fellowships/women-fellowship.jpg',
+    title: 'Women Fellowship Dance & Thanksgiving Song',
     category: 'women',
-    caption: 'Close-up of the celebratory Christian jubilee print cloth worn during church convocations.',
-    uploadedAt: '2026-10-12T16:00:00.000Z',
+    caption: 'Joyful video clip of the women praising the Lord with traditional South Sudanese rhythms.',
+    uploadedAt: '2026-10-12T15:30:00.000Z',
     isUserUploaded: false,
-    mediaType: 'photo',
+    mediaType: 'video',
+    duration: '1:10',
   },
 
-  // 4. School Vocational Photos & Videos
+  // 4. Vocational Photos & Videos
   {
     id: 'vocational-tailoring',
     url: '/assets/schools/vocational-school/tailoring-class.jpg',
-    title: 'Tailoring & Garment Construction Workshop',
+    title: 'Tailoring & Garment Design Training',
     category: 'vocational',
-    caption: 'Youth and adult learners operating manual sewing machines crafting school uniforms and local attire.',
-    uploadedAt: '2026-10-13T09:00:00.000Z',
+    caption: 'Trainees learning precision machine sewing, pattern drafting, and apparel making.',
+    uploadedAt: '2026-10-13T10:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
   {
     id: 'vocational-carpentry',
     url: '/assets/schools/vocational-school/carpentry-workshop.jpg',
-    title: 'Carpentry & Joinery Apprentice Station',
+    title: 'Carpentry & Furniture Joinery Workshop',
     category: 'vocational',
-    caption: 'Young apprentices learning joinery, planing, and crafting wooden desks for local schools.',
-    uploadedAt: '2026-10-14T11:20:00.000Z',
+    caption: 'Youth crafting study desks, classroom benches, doors, and timber furniture.',
+    uploadedAt: '2026-10-14T11:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
   },
@@ -333,49 +338,6 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
   },
 ];
 
-/**
- * Client-side image compression using canvas
- */
-const compressImage = (file: File, maxDimension = 1400, quality = 0.85): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > height) {
-          if (width > maxDimension) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          }
-        } else {
-          if (height > maxDimension) {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(event.target?.result as string);
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve(dataUrl);
-      };
-      img.onerror = reject;
-    };
-    reader.onerror = reject;
-  });
-};
-
 export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Slot photos (for hero & specific components)
   const [photos, setPhotos] = useState<Record<string, PhotoData>>(() => {
@@ -403,36 +365,185 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
 
-  // Re-hydrate video URLs from IndexedDB for any user-uploaded videos after refresh
+  const [isStorageReady, setIsStorageReady] = useState(false);
+  const activeObjectUrls = useRef<Set<string>>(new Set());
+
+  // Helper to safely track created object URLs
+  const createTrackedUrl = (blob: Blob): string => {
+    const url = URL.createObjectURL(blob);
+    activeObjectUrls.current.add(url);
+    return url;
+  };
+
+  // 1. PRIMARY HYDRATION: Permanent IndexedDB Load & Orphan Recovery
   useEffect(() => {
-    const rehydrateVideos = async () => {
-      let hasUpdates = false;
-      const updatedList = await Promise.all(
-        galleryPhotos.map(async (item) => {
-          if (item.isUserUploaded && item.mediaType === 'video' && !item.videoUrl) {
-            try {
-              const blob = await getMediaFile(item.id);
-              if (blob) {
-                hasUpdates = true;
-                return {
-                  ...item,
-                  videoUrl: URL.createObjectURL(blob),
-                };
+    let isCancelled = false;
+
+    const hydrateFromIndexedDB = async () => {
+      try {
+        // A. Load Gallery Items from IndexedDB
+        let idbGallery = await loadGalleryItemsFromIDB<GalleryPhotoItem[]>();
+        
+        // If IndexedDB metadata is empty, check localStorage fallback
+        if (!idbGallery || idbGallery.length === 0) {
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY_GALLERY);
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                idbGallery = parsed;
               }
-            } catch (e) {
-              console.warn('Could not rehydrate video blob:', e);
+            }
+          } catch {}
+        }
+
+        const baseList: GalleryPhotoItem[] = (idbGallery && idbGallery.length > 0) 
+          ? idbGallery 
+          : DEFAULT_GALLERY_PHOTOS;
+
+        // B. Rehydrate each user-uploaded item's binary blob directly from IndexedDB
+        const hydratedGallery: GalleryPhotoItem[] = await Promise.all(
+          baseList.map(async (item) => {
+            if (item.isUserUploaded) {
+              try {
+                const blob = await getMediaFile(item.id);
+                if (blob) {
+                  const freshUrl = createTrackedUrl(blob);
+                  if (item.mediaType === 'video') {
+                    return {
+                      ...item,
+                      videoUrl: freshUrl,
+                      url: item.url || freshUrl,
+                    };
+                  } else {
+                    return {
+                      ...item,
+                      url: freshUrl,
+                    };
+                  }
+                }
+              } catch (e) {
+                console.warn(`Could not hydrate blob for ${item.id}:`, e);
+              }
+            }
+            return item;
+          })
+        );
+
+        // C. ORPHANED RECOVERY CHECK:
+        // If the user previously uploaded photos that disappeared from localStorage due to quota errors,
+        // recover their binary blobs directly from IndexedDB so they immediately reappear!
+        try {
+          const allKeys = await getAllMediaBlobKeys();
+          const existingIds = new Set(hydratedGallery.map((i) => i.id));
+          const recoveredItems: GalleryPhotoItem[] = [];
+
+          for (const key of allKeys) {
+            if (key.startsWith('upload-') && !existingIds.has(key)) {
+              const blob = await getMediaFile(key);
+              if (blob) {
+                const isVideo = blob.type.startsWith('video/');
+                const freshUrl = createTrackedUrl(blob);
+                recoveredItems.push({
+                  id: key,
+                  url: freshUrl,
+                  videoUrl: isVideo ? freshUrl : undefined,
+                  mediaType: isVideo ? 'video' : 'photo',
+                  title: isVideo ? 'Recovered Video Archive' : 'Recovered Ministry Photograph',
+                  category: 'life-at-heritage',
+                  caption: 'Restored authentic photograph from local persistent database.',
+                  uploadedAt: new Date().toISOString(),
+                  isUserUploaded: true,
+                  fileSize: `${(blob.size / 1024).toFixed(0)} KB`,
+                });
+              }
             }
           }
-          return item;
-        })
-      );
 
-      if (hasUpdates) {
-        setGalleryPhotos(updatedList);
+          if (recoveredItems.length > 0) {
+            console.log(`Recovered ${recoveredItems.length} media files from IndexedDB!`);
+            hydratedGallery.unshift(...recoveredItems);
+          }
+        } catch (recoverErr) {
+          console.warn('Orphan recovery check skipped:', recoverErr);
+        }
+
+        if (!isCancelled) {
+          setGalleryPhotos(hydratedGallery);
+          // Persist the consolidated list back to IndexedDB metadata
+          await saveGalleryItemsToIDB(hydratedGallery);
+        }
+
+        // D. Load Slot Photos from IndexedDB
+        let idbSlots = await loadSlotPhotosFromIDB<Record<string, PhotoData>>();
+        if (!idbSlots || Object.keys(idbSlots).length === 0) {
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY_SLOTS);
+            if (saved) idbSlots = JSON.parse(saved);
+          } catch {}
+        }
+
+        const baseSlots = idbSlots || {};
+        const hydratedSlots: Record<string, PhotoData> = {};
+
+        for (const [slotKey, slotData] of Object.entries(baseSlots)) {
+          try {
+            const blob = await getMediaFile(`slot-${slotKey}`);
+            if (blob) {
+              const freshUrl = createTrackedUrl(blob);
+              hydratedSlots[slotKey] = {
+                ...slotData,
+                url: freshUrl,
+                videoUrl: slotData.mediaType === 'video' ? freshUrl : undefined,
+              };
+            } else {
+              hydratedSlots[slotKey] = slotData;
+            }
+          } catch {
+            hydratedSlots[slotKey] = slotData;
+          }
+        }
+
+        // Check for any orphaned slot blobs
+        try {
+          const allKeys = await getAllMediaBlobKeys();
+          for (const key of allKeys) {
+            if (key.startsWith('slot-')) {
+              const slotKey = key.replace('slot-', '');
+              if (!hydratedSlots[slotKey]) {
+                const blob = await getMediaFile(key);
+                if (blob) {
+                  const isVideo = blob.type.startsWith('video/');
+                  const freshUrl = createTrackedUrl(blob);
+                  hydratedSlots[slotKey] = {
+                    url: freshUrl,
+                    alt: `Slot ${slotKey}`,
+                    uploadedAt: new Date().toISOString(),
+                    mediaType: isVideo ? 'video' : 'photo',
+                    videoUrl: isVideo ? freshUrl : undefined,
+                  };
+                }
+              }
+            }
+          }
+        } catch {}
+
+        if (!isCancelled) {
+          setPhotos(hydratedSlots);
+          await saveSlotPhotosToIDB(hydratedSlots);
+          setIsStorageReady(true);
+        }
+      } catch (err) {
+        console.warn('Hydration error:', err);
+        if (!isCancelled) setIsStorageReady(true);
       }
     };
 
-    rehydrateVideos();
+    hydrateFromIndexedDB();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   // Slot modal state
@@ -441,62 +552,93 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Multi-upload modal state
   const [isMultiUploadOpen, setIsMultiUploadOpen] = useState(false);
-  const [multiUploadDefaultCategory, setMultiUploadDefaultCategory] = useState<GalleryCategory>('heritage');
+  const [multiUploadDefaultCategory, setMultiUploadDefaultCategory] = useState<GalleryCategory>('life-at-heritage');
 
-  // Sync slots to localStorage
+  // Sync slots to IndexedDB and safe lightweight localStorage
   useEffect(() => {
+    if (!isStorageReady) return;
+
+    // 1. Permanent IndexedDB save
+    saveSlotPhotosToIDB(photos);
+
+    // 2. Safe localStorage save: exclude massive base64 strings so quota is NEVER hit
     try {
-      localStorage.setItem(STORAGE_KEY_SLOTS, JSON.stringify(photos));
+      const lightweight: Record<string, PhotoData> = {};
+      for (const [key, data] of Object.entries(photos)) {
+        // If data URL is huge (>100KB), strip or keep lightweight placeholder
+        if (data.url.startsWith('data:image/') && data.url.length > 20000) {
+          lightweight[key] = { ...data, url: '' };
+        } else if (data.url.startsWith('blob:')) {
+          lightweight[key] = { ...data, url: '' };
+        } else {
+          lightweight[key] = data;
+        }
+      }
+      localStorage.setItem(STORAGE_KEY_SLOTS, JSON.stringify(lightweight));
     } catch (e) {
-      console.warn('Failed to persist slot photos to localStorage:', e);
+      // IndexedDB has already saved it safely
     }
-  }, [photos]);
+  }, [photos, isStorageReady]);
 
-  // Sync gallery to localStorage (exclude volatile object URLs so JSON stringifies cleanly)
+  // Sync gallery to IndexedDB and safe lightweight localStorage
   useEffect(() => {
+    if (!isStorageReady) return;
+
+    // 1. Permanent IndexedDB save
+    saveGalleryItemsToIDB(galleryPhotos);
+
+    // 2. Safe localStorage save: keep items metadata but strip bloated data URLs & dead blob URLs
     try {
       const sanitized = galleryPhotos.map((item) => {
-        if (item.videoUrl && item.videoUrl.startsWith('blob:')) {
-          // Keep item metadata but don't stringify dead blob URLs to localStorage
-          const { videoUrl, ...rest } = item;
-          return rest;
+        if (!item.isUserUploaded) return item;
+
+        const copy = { ...item };
+        if (copy.videoUrl && copy.videoUrl.startsWith('blob:')) {
+          delete copy.videoUrl;
         }
-        return item;
+        if (copy.url && (copy.url.startsWith('blob:') || copy.url.length > 20000)) {
+          // Keep item metadata but avoid 5MB quota blowup
+          copy.url = '';
+        }
+        return copy;
       });
       localStorage.setItem(STORAGE_KEY_GALLERY, JSON.stringify(sanitized));
     } catch (e) {
-      console.warn('Failed to persist gallery to localStorage:', e);
+      // Safe to ignore because IndexedDB is the source of truth
     }
-  }, [galleryPhotos]);
+  }, [galleryPhotos, isStorageReady]);
 
+  // Upload single photo or video to a slot
   const uploadPhoto = async (slotKey: string, file: File, alt?: string): Promise<string> => {
     const isVideo = file.type.startsWith('video/');
-    let url = '';
-    let videoUrl: string | undefined = undefined;
+    
+    // Save original binary file directly to IndexedDB
+    await saveMediaFile(`slot-${slotKey}`, file);
+    
+    // Create live ObjectURL for instant, crystal-clear rendering
+    const objectUrl = createTrackedUrl(file);
+    let posterUrl = objectUrl;
 
     if (isVideo) {
       const { thumbnailUrl } = await generateVideoThumbnail(file);
-      url = thumbnailUrl || '/assets/church/services/hero-church.jpg';
-      videoUrl = URL.createObjectURL(file);
-      await saveMediaFile(`slot-${slotKey}`, file);
-    } else {
-      url = await compressImage(file, 1600, 0.88);
-      await saveMediaFile(`slot-${slotKey}`, file);
+      posterUrl = thumbnailUrl || objectUrl;
     }
 
     const newPhotoData: PhotoData = {
-      url,
+      url: isVideo ? posterUrl : objectUrl,
       alt: alt || file.name,
       uploadedAt: new Date().toISOString(),
       mediaType: isVideo ? 'video' : 'photo',
-      videoUrl,
+      videoUrl: isVideo ? objectUrl : undefined,
     };
 
-    setPhotos((prev) => ({
-      ...prev,
-      [slotKey]: newPhotoData,
-    }));
-    return url;
+    setPhotos((prev) => {
+      const updated = { ...prev, [slotKey]: newPhotoData };
+      saveSlotPhotosToIDB(updated);
+      return updated;
+    });
+
+    return isVideo ? posterUrl : objectUrl;
   };
 
   const removePhoto = (slotKey: string) => {
@@ -504,6 +646,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPhotos((prev) => {
       const updated = { ...prev };
       delete updated[slotKey];
+      saveSlotPhotosToIDB(updated);
       return updated;
     });
   };
@@ -530,6 +673,10 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const fileArray = Array.from(files);
     const newItems: GalleryPhotoItem[] = [];
 
+    // Map legacy alias to proper canonical category
+    const canonicalCategory: GalleryCategory = 
+      category === 'heritage' ? 'victorious-heritage' : category;
+
     for (let i = 0; i < fileArray.length; i++) {
       const file = fileArray[i];
       const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
@@ -542,21 +689,23 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const itemId = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${i}`;
       const isVideo = file.type.startsWith('video/');
 
+      // Save raw binary file to IndexedDB FIRST
+      await saveMediaFile(itemId, file);
+      const objectUrl = createTrackedUrl(file);
+
       if (isVideo) {
         // Video file processing
         const { thumbnailUrl, duration } = await generateVideoThumbnail(file);
-        const videoUrl = URL.createObjectURL(file);
-        await saveMediaFile(itemId, file);
 
         const item: GalleryPhotoItem = {
           id: itemId,
-          url: thumbnailUrl || '/assets/schools/heritage-academy/morning-assembly.jpg',
-          videoUrl,
+          url: thumbnailUrl || objectUrl,
+          videoUrl: objectUrl,
           mediaType: 'video',
           duration,
           title,
-          category,
-          caption: `Uploaded video clip for ${category === 'heritage' ? 'Life at Victorious Heritage' : category} section.`,
+          category: canonicalCategory,
+          caption: `Uploaded video clip for ${canonicalCategory === 'life-at-heritage' ? 'Life at Victorious Heritage' : canonicalCategory} section.`,
           uploadedAt: new Date().toISOString(),
           isUserUploaded: true,
           fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
@@ -564,16 +713,13 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         newItems.push(item);
       } else {
         // Photo file processing
-        const url = await compressImage(file, 1400, 0.85);
-        await saveMediaFile(itemId, file);
-
         const item: GalleryPhotoItem = {
           id: itemId,
-          url,
+          url: objectUrl,
           mediaType: 'photo',
           title,
-          category,
-          caption: `Uploaded photograph for ${category === 'heritage' ? 'Life at Victorious Heritage' : category} section.`,
+          category: canonicalCategory,
+          caption: `Uploaded photograph for ${canonicalCategory === 'life-at-heritage' ? 'Life at Victorious Heritage' : canonicalCategory} section.`,
           uploadedAt: new Date().toISOString(),
           isUserUploaded: true,
           fileSize: `${(file.size / 1024).toFixed(0)} KB`,
@@ -582,7 +728,13 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
 
-    setGalleryPhotos((prev) => [...newItems, ...prev]);
+    setGalleryPhotos((prev) => {
+      const updated = [...newItems, ...prev];
+      // Immediately write to IndexedDB so it's guaranteed to be saved
+      saveGalleryItemsToIDB(updated);
+      return updated;
+    });
+
     return newItems;
   };
 
@@ -591,13 +743,19 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const removeGalleryPhoto = (id: string) => {
     deleteMediaFile(id);
-    setGalleryPhotos((prev) => prev.filter((p) => p.id !== id));
+    setGalleryPhotos((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
+      saveGalleryItemsToIDB(updated);
+      return updated;
+    });
   };
 
   const updateGalleryPhoto = (id: string, updates: Partial<GalleryPhotoItem>) => {
-    setGalleryPhotos((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-    );
+    setGalleryPhotos((prev) => {
+      const updated = prev.map((p) => (p.id === id ? { ...p, ...updates } : p));
+      saveGalleryItemsToIDB(updated);
+      return updated;
+    });
   };
 
   const replaceGalleryMedia = async (
@@ -608,33 +766,37 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const existing = galleryPhotos.find((p) => p.id === id);
     if (!existing) return null;
 
-    // Delete existing binary file from IndexedDB if it was stored
+    // Delete existing binary file from IndexedDB
     await deleteMediaFile(id);
 
+    // Save replacement file to IndexedDB
+    await saveMediaFile(id, file);
+    const objectUrl = createTrackedUrl(file);
+
     const isVideo = file.type.startsWith('video/');
-    let url = '';
+    let posterUrl = objectUrl;
     let videoUrl: string | undefined = undefined;
     let duration: string | undefined = undefined;
 
     if (isVideo) {
       const res = await generateVideoThumbnail(file);
-      url = res.thumbnailUrl || '/assets/schools/heritage-academy/morning-assembly.jpg';
-      videoUrl = URL.createObjectURL(file);
+      posterUrl = res.thumbnailUrl || objectUrl;
+      videoUrl = objectUrl;
       duration = res.duration;
-      await saveMediaFile(id, file);
-    } else {
-      url = await compressImage(file, 1600, 0.88);
-      await saveMediaFile(id, file);
     }
+
+    const updatedCategory = updates?.category 
+      ? (updates.category === 'heritage' ? 'victorious-heritage' : updates.category)
+      : existing.category;
 
     const updatedItem: GalleryPhotoItem = {
       ...existing,
-      url,
+      url: isVideo ? posterUrl : objectUrl,
       videoUrl,
       duration,
       mediaType: isVideo ? 'video' : 'photo',
       title: updates?.title || existing.title,
-      category: updates?.category || existing.category,
+      category: updatedCategory,
       caption: updates?.caption || existing.caption,
       uploadedAt: new Date().toISOString(),
       isUserUploaded: true,
@@ -643,20 +805,34 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         : `${(file.size / 1024).toFixed(0)} KB`,
     };
 
-    setGalleryPhotos((prev) =>
-      prev.map((p) => (p.id === id ? updatedItem : p))
-    );
+    setGalleryPhotos((prev) => {
+      const updated = prev.map((p) => (p.id === id ? updatedItem : p));
+      saveGalleryItemsToIDB(updated);
+      return updated;
+    });
 
     return updatedItem;
   };
 
-  const resetDefaultGalleryPhotos = () => {
+  const resetDefaultGalleryPhotos = async () => {
     localStorage.removeItem(STORAGE_KEY_GALLERY);
+    // Delete any user blobs
+    try {
+      const allKeys = await getAllMediaBlobKeys();
+      for (const k of allKeys) {
+        if (k.startsWith('upload-')) {
+          await deleteMediaFile(k);
+        }
+      }
+    } catch {}
+
     setGalleryPhotos(DEFAULT_GALLERY_PHOTOS);
+    await saveGalleryItemsToIDB(DEFAULT_GALLERY_PHOTOS);
   };
 
-  const openMultiUploadModal = (defaultCategory: GalleryCategory = 'heritage') => {
-    setMultiUploadDefaultCategory(defaultCategory);
+  const openMultiUploadModal = (defaultCategory: GalleryCategory = 'life-at-heritage') => {
+    const canonical = defaultCategory === 'heritage' ? 'victorious-heritage' : defaultCategory;
+    setMultiUploadDefaultCategory(canonical);
     setIsMultiUploadOpen(true);
   };
 
@@ -686,6 +862,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         openMultiUploadModal,
         closeMultiUploadModal,
         multiUploadDefaultCategory,
+        isStorageReady,
       }}
     >
       {children}

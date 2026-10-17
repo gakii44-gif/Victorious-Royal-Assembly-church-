@@ -25,7 +25,9 @@ import {
   SunMedium,
   Briefcase,
   GraduationCap,
-  Heart
+  Heart,
+  Smile,
+  Film
 } from 'lucide-react';
 import { usePhotos, GalleryCategory } from '../context/PhotoContext';
 import { EveryChildLearnsSection } from '../components/EveryChildLearnsSection';
@@ -748,140 +750,189 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setHomeGalleryTab('all')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-              homeGalleryTab === 'all'
-                ? 'bg-stone-900 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            All Categories ({galleryPhotos.length})
-          </button>
-          <button
-            onClick={() => setHomeGalleryTab('heritage')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              homeGalleryTab === 'heritage'
-                ? 'bg-emerald-800 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Victorious Heritage Photos</span>
-            <span className="text-[10px] opacity-75 font-mono">
-              ({galleryPhotos.filter(p => p.category === 'heritage').length})
-            </span>
-          </button>
-          <button
-            onClick={() => setHomeGalleryTab('church')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              homeGalleryTab === 'church'
-                ? 'bg-amber-800 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <Church className="w-3.5 h-3.5 text-amber-500" />
-            <span>Church Photos</span>
-            <span className="text-[10px] opacity-75 font-mono">
-              ({galleryPhotos.filter(p => p.category === 'church').length})
-            </span>
-          </button>
-          <button
-            onClick={() => setHomeGalleryTab('women')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              homeGalleryTab === 'women'
-                ? 'bg-rose-700 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <Heart className="w-3.5 h-3.5 text-rose-400" />
-            <span>Women Section Photos</span>
-            <span className="text-[10px] opacity-75 font-mono">
-              ({galleryPhotos.filter(p => p.category === 'women').length})
-            </span>
-          </button>
-          <button
-            onClick={() => setHomeGalleryTab('vocational')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              homeGalleryTab === 'vocational'
-                ? 'bg-sky-800 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <Wrench className="w-3.5 h-3.5 text-sky-400" />
-            <span>School Vocational</span>
-            <span className="text-[10px] opacity-75 font-mono">
-              ({galleryPhotos.filter(p => p.category === 'vocational').length})
-            </span>
-          </button>
-        </div>
+        {/* Category Tabs */}
+        {(() => {
+          const isMatchCategory = (itemCat: string, tab: string) => {
+            if (tab === 'all') return true;
+            if (tab === 'heritage' || tab === 'victorious-heritage') {
+              return itemCat === 'victorious-heritage' || itemCat === 'heritage';
+            }
+            return itemCat === tab;
+          };
 
-        {/* Gallery Preview Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {(homeGalleryTab === 'all' 
-            ? galleryPhotos.slice(0, 8) 
-            : galleryPhotos.filter(p => p.category === homeGalleryTab).slice(0, 8)
-          ).map((item) => {
-            const isUser = item.isUserUploaded;
-            const categoryLabel = 
-              item.category === 'heritage' ? 'Victorious Heritage' :
-              item.category === 'church' ? 'Church Photos' :
-              item.category === 'women' ? 'Women Section' : 'School Vocational';
+          const filteredHomeItems = (homeGalleryTab === 'all'
+            ? galleryPhotos
+            : galleryPhotos.filter((p) => isMatchCategory(p.category, homeGalleryTab))
+          ).slice(0, 8);
 
-            return (
-              <div
-                key={item.id}
-                onClick={() => onNavigate('gallery')}
-                className="group bg-white rounded-xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
-              >
-                <div className="relative aspect-4/3 overflow-hidden bg-stone-100">
-                  {isUser ? (
-                    <img
-                      src={item.url}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-emerald-950 via-stone-900 to-stone-900 p-5 flex flex-col items-center justify-between text-center relative">
-                      <div className="text-[10px] uppercase font-bold text-lime-400 tracking-wider">
-                        {categoryLabel}
-                      </div>
-                      <div className="my-auto flex flex-col items-center gap-1.5">
-                        <VRAILogo size={36} />
-                        <p className="text-white text-xs font-bold leading-tight line-clamp-2 px-2">
-                          {item.title}
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-stone-400 font-medium">
-                        Click to view / upload
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-white backdrop-blur-xs">
-                      {categoryLabel}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 space-y-1">
-                  <h4 className="font-bold text-slate-900 text-xs line-clamp-1 group-hover:text-emerald-800 transition-colors">
-                    {item.title}
-                  </h4>
-                  <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
-                    {item.caption}
-                  </p>
-                  <div className="pt-2 flex items-center justify-between text-[10px] text-emerald-800 font-bold border-t border-stone-100">
-                    <span>Manage &amp; Replace in Gallery</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </div>
-                </div>
+          return (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setHomeGalleryTab('all')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    homeGalleryTab === 'all'
+                      ? 'bg-stone-900 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  All Categories ({galleryPhotos.length})
+                </button>
+                <button
+                  onClick={() => setHomeGalleryTab('victorious-heritage')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    homeGalleryTab === 'victorious-heritage' || homeGalleryTab === 'heritage'
+                      ? 'bg-emerald-800 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Victorious Heritage</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    ({galleryPhotos.filter(p => isMatchCategory(p.category, 'victorious-heritage')).length})
+                  </span>
+                </button>
+                <button
+                  onClick={() => setHomeGalleryTab('church')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    homeGalleryTab === 'church'
+                      ? 'bg-amber-800 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <Church className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Church</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    ({galleryPhotos.filter(p => p.category === 'church').length})
+                  </span>
+                </button>
+                <button
+                  onClick={() => setHomeGalleryTab('women')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    homeGalleryTab === 'women'
+                      ? 'bg-rose-700 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <Heart className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Women</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    ({galleryPhotos.filter(p => p.category === 'women').length})
+                  </span>
+                </button>
+                <button
+                  onClick={() => setHomeGalleryTab('vocational')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    homeGalleryTab === 'vocational'
+                      ? 'bg-sky-800 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <Wrench className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Vocational</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    ({galleryPhotos.filter(p => p.category === 'vocational').length})
+                  </span>
+                </button>
+                <button
+                  onClick={() => setHomeGalleryTab('life-at-heritage')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    homeGalleryTab === 'life-at-heritage'
+                      ? 'bg-purple-800 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <Smile className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Life at Victorious Heritage</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    ({galleryPhotos.filter(p => p.category === 'life-at-heritage').length})
+                  </span>
+                </button>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Gallery Preview Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {filteredHomeItems.map((item) => {
+                  const isUser = item.isUserUploaded;
+                  const isVideo = item.mediaType === 'video';
+                  const categoryLabel = 
+                    (item.category === 'heritage' || item.category === 'victorious-heritage') ? 'Victorious Heritage' :
+                    item.category === 'church' ? 'Church' :
+                    item.category === 'women' ? 'Women' :
+                    item.category === 'vocational' ? 'Vocational' : 'Life at Victorious Heritage';
+
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => onNavigate('gallery')}
+                      className="group bg-white rounded-xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                    >
+                      <div className="relative aspect-4/3 overflow-hidden bg-stone-100">
+                        {isUser ? (
+                          <div className="w-full h-full relative">
+                            <img
+                              src={item.url}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            {isVideo && (
+                              <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
+                                  <Film className="w-5 h-5" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-emerald-950 via-stone-900 to-stone-900 p-5 flex flex-col items-center justify-between text-center relative">
+                            <div className="text-[10px] uppercase font-bold text-lime-400 tracking-wider">
+                              {categoryLabel}
+                            </div>
+                            <div className="my-auto flex flex-col items-center gap-1.5">
+                              {isVideo ? <Film className="w-7 h-7 text-amber-400" /> : <VRAILogo size={36} />}
+                              <p className="text-white text-xs font-bold leading-tight line-clamp-2 px-2">
+                                {item.title}
+                              </p>
+                            </div>
+                            <span className="text-[10px] text-stone-400 font-medium">
+                              {isVideo ? 'Click to preview video' : 'Click to view / upload'}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-white backdrop-blur-xs">
+                            {categoryLabel}
+                          </span>
+                          {isVideo && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-600 text-white">
+                              Video
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 space-y-1">
+                        <h4 className="font-bold text-slate-900 text-xs line-clamp-1 group-hover:text-emerald-800 transition-colors">
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
+                          {item.caption}
+                        </p>
+                        <div className="pt-2 flex items-center justify-between text-[10px] text-emerald-800 font-bold border-t border-stone-100">
+                          <span>Manage &amp; Replace in Gallery</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
+
+
 
         {/* Social Connect Banner */}
         <div className="bg-gradient-to-r from-stone-900 via-emerald-950 to-stone-900 text-white rounded-2xl p-6 sm:p-8 border border-stone-800 flex flex-col lg:flex-row lg:items-center justify-between gap-6">

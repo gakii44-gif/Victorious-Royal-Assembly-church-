@@ -16,9 +16,12 @@ import {
   Award,
   Film,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Play
 } from 'lucide-react';
 import { VRAILogo } from './VRAILogo';
+import { GalleryPhotoItem } from '../context/PhotoContext';
+import { ReplaceMediaModal } from './ReplaceMediaModal';
 
 interface LifeAtHeritageGallerySectionProps {
   onNavigate: (view: NavView) => void;
@@ -43,8 +46,9 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
   onOpenDonateModal,
   className = '',
 }) => {
-  const { getPhoto, openUploadModal, openMultiUploadModal, removePhoto } = usePhotos();
-  const [lightboxItem, setLightboxItem] = useState<{ key: string; url?: string; title: string; subtitle: string; badge: string } | null>(null);
+  const { getPhoto, openUploadModal, openMultiUploadModal, removePhoto, galleryPhotos, removeGalleryPhoto } = usePhotos();
+  const [lightboxItem, setLightboxItem] = useState<{ key: string; url?: string; title: string; subtitle: string; badge: string; isVideo?: boolean; videoUrl?: string } | null>(null);
+  const [replaceMediaItem, setReplaceMediaItem] = useState<GalleryPhotoItem | null>(null);
 
   // 6 specific mosaic tiles matching the exact composition in the user's screenshot
   const col1Item: MosaicItem = {
@@ -298,7 +302,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
 
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => openMultiUploadModal('heritage')}
+              onClick={() => openMultiUploadModal('life-at-heritage')}
               className="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors shadow-xs flex items-center gap-2"
             >
               <Upload className="w-3.5 h-3.5 text-lime-300" />
@@ -308,7 +312,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
               onClick={() => onNavigate('gallery')}
               className="px-4 py-2.5 text-stone-700 hover:text-emerald-900 font-bold text-xs transition-colors"
             >
-              All 4 Galleries &rarr;
+              All 5 Galleries &rarr;
             </button>
           </div>
         </div>
@@ -339,6 +343,105 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
         </div>
       </div>
 
+      {/* Uploaded User Photos & Videos for Life at Victorious Heritage */}
+      {(() => {
+        const userUploadedItems = galleryPhotos.filter(
+          (p) => p.category === 'life-at-heritage' && p.isUserUploaded
+        );
+        if (userUploadedItems.length === 0) return null;
+
+        return (
+          <div className="pt-6 space-y-4 border-t border-stone-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                <h3 className="text-sm font-extrabold text-slate-900 font-heading">
+                  Community Uploads — Life at Victorious Heritage ({userUploadedItems.length})
+                </h3>
+              </div>
+              <button
+                onClick={() => openMultiUploadModal('life-at-heritage')}
+                className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Add More</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {userUploadedItems.map((item) => {
+                const isVideo = item.mediaType === 'video';
+                return (
+                  <div
+                    key={item.id}
+                    className="group relative bg-white rounded-xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  >
+                    <div 
+                      className="relative aspect-4/3 bg-stone-900 overflow-hidden cursor-pointer"
+                      onClick={() => setLightboxItem({
+                        key: item.id,
+                        url: item.url,
+                        title: item.title,
+                        subtitle: item.caption || 'Uploaded for Life at Victorious Heritage',
+                        badge: 'Life at Victorious Heritage',
+                        isVideo,
+                        videoUrl: item.videoUrl
+                      })}
+                    >
+                      <img
+                        src={item.url}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {isVideo && (
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
+                            <Play className="w-5 h-5 ml-0.5 fill-current" />
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute top-2 left-2 z-10">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-black/70 text-white backdrop-blur-xs">
+                          {isVideo ? 'Video' : 'Photo'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 space-y-1">
+                      <h4 className="font-bold text-xs text-slate-900 truncate">
+                        {item.title}
+                      </h4>
+                      <div className="pt-2 flex items-center justify-between border-t border-stone-100">
+                        <button
+                          type="button"
+                          onClick={() => setReplaceMediaItem(item)}
+                          className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Replace</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Delete "${item.title}"?`)) {
+                              removeGalleryPhoto(item.id);
+                            }
+                          }}
+                          className="text-[11px] text-stone-400 hover:text-rose-600 p-1"
+                          title="Delete photo"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Interactive Lightbox Modal */}
       {lightboxItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in duration-200">
@@ -353,7 +456,16 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
 
             {/* Image or Detailed Preview */}
             <div className="aspect-16/10 sm:aspect-16/9 bg-black flex items-center justify-center overflow-hidden">
-              {lightboxItem.url ? (
+              {lightboxItem.isVideo && lightboxItem.videoUrl ? (
+                <video
+                  src={lightboxItem.videoUrl}
+                  poster={lightboxItem.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full h-full max-h-[65vh] object-contain bg-black"
+                />
+              ) : lightboxItem.url ? (
                 <img
                   src={lightboxItem.url}
                   alt={lightboxItem.title}
@@ -438,6 +550,13 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
           </div>
         </div>
       )}
+
+      {/* Replace Media Modal for user community uploads */}
+      <ReplaceMediaModal
+        isOpen={!!replaceMediaItem}
+        item={replaceMediaItem}
+        onClose={() => setReplaceMediaItem(null)}
+      />
     </section>
   );
 };
