@@ -94,15 +94,38 @@ export const PhotoUploadModal: React.FC = () => {
           </div>
 
           {/* Existing or New Preview */}
-          {(previewUrl || currentPhoto) ? (
-            <div className="space-y-3">
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-stone-100 border border-stone-200">
-                <img
-                  src={previewUrl || currentPhoto?.url}
-                  alt={altText || currentPhoto?.alt || 'Uploaded church photograph'}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          {(() => {
+            const displayUrl = previewUrl || (currentPhoto?.url && currentPhoto.url.trim() !== '' ? currentPhoto.url : null);
+            if (!displayUrl) {
+              return (
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-stone-300 hover:border-emerald-600 rounded-xl p-8 text-center cursor-pointer transition-colors bg-stone-50 hover:bg-emerald-50/30 flex flex-col items-center justify-center gap-2"
+                >
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <p className="font-semibold text-slate-900 text-xs mt-1">
+                    Click or drag &amp; drop your real photograph here
+                  </p>
+                  <p className="text-[11px] text-stone-500">
+                    Supports JPEG, PNG, WebP (under 5MB recommended)
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-3">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-stone-100 border border-stone-200">
+                  <img
+                    src={displayUrl}
+                    alt={altText || currentPhoto?.alt || 'Uploaded church photograph'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
               <div className="flex items-center justify-between gap-2 pt-1 border-t border-stone-100">
                 <button
@@ -125,24 +148,8 @@ export const PhotoUploadModal: React.FC = () => {
                 )}
               </div>
             </div>
-          ) : (
-            <div
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-stone-300 hover:border-emerald-600 rounded-xl p-8 text-center cursor-pointer transition-colors bg-stone-50 hover:bg-emerald-50/30 flex flex-col items-center justify-center gap-2"
-            >
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                <Upload className="w-5 h-5" />
-              </div>
-              <p className="font-semibold text-slate-900 text-xs mt-1">
-                Click or drag &amp; drop your real photograph here
-              </p>
-              <p className="text-[11px] text-stone-500">
-                Supports JPEG, PNG, WebP (under 5MB recommended)
-              </p>
-            </div>
-          )}
+          );
+        })()}
 
           <input
             ref={fileInputRef}

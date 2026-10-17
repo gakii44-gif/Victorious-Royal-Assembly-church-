@@ -345,22 +345,28 @@ export const MultiPhotoUploadModal: React.FC = () => {
                       >
                         {/* Thumbnail / Video Preview */}
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-stone-200 shrink-0 relative flex items-center justify-center">
-                          {item.isVideo ? (
-                            <div className="w-full h-full bg-stone-900 flex flex-col items-center justify-center text-white relative">
-                              <video
+                          {item.previewUrl && item.previewUrl.trim() !== '' ? (
+                            item.isVideo ? (
+                              <div className="w-full h-full bg-stone-900 flex flex-col items-center justify-center text-white relative">
+                                <video
+                                  src={item.previewUrl}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                  <Play className="w-5 h-5 text-white fill-white/80" />
+                                </div>
+                              </div>
+                            ) : (
+                              <img
                                 src={item.previewUrl}
+                                alt={item.name}
                                 className="w-full h-full object-cover"
                               />
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <Play className="w-5 h-5 text-white fill-white/80" />
-                              </div>
-                            </div>
+                            )
                           ) : (
-                            <img
-                              src={item.previewUrl}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
+                            <div className="w-full h-full bg-stone-800 flex items-center justify-center text-stone-500">
+                              <ImageIcon className="w-6 h-6" />
+                            </div>
                           )}
 
                           <span className={`absolute bottom-0.5 right-0.5 px-1 rounded text-[8px] font-bold ${

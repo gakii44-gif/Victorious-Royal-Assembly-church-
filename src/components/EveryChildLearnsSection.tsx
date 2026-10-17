@@ -123,7 +123,7 @@ export const EveryChildLearnsSection: React.FC<EveryChildLearnsSectionProps> = (
           {/* Right Column: Graduation Photo Card with Children in Emerald Gowns */}
           <div className="lg:col-span-5">
             <div className="relative group rounded-2xl overflow-hidden border-2 border-white shadow-xl bg-stone-900 aspect-4/3 sm:aspect-5/4">
-              {graduationPhoto ? (
+              {graduationPhoto && graduationPhoto.url && graduationPhoto.url.trim() !== '' ? (
                 <img
                   src={graduationPhoto.url}
                   alt="Victorious Heritage Pupils Graduation Ceremony in Emerald Green & Gold Academic Robes"

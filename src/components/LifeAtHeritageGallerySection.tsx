@@ -135,7 +135,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
       <div
         className={`group relative rounded-2xl overflow-hidden border border-stone-200/80 shadow-xs hover:shadow-md transition-all duration-300 bg-stone-900 ${aspectClass}`}
       >
-        {photo ? (
+        {photo && photo.url && photo.url.trim() !== '' ? (
           <img
             src={photo.url}
             alt={photo.alt || item.alt}
@@ -388,11 +388,17 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
                         videoUrl: item.videoUrl
                       })}
                     >
-                      <img
-                        src={item.url}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                      {item.url && item.url.trim() !== '' ? (
+                        <img
+                          src={item.url}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-stone-800 text-stone-500">
+                          <VRAILogo size={32} />
+                        </div>
+                      )}
                       {isVideo && (
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                           <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
@@ -456,16 +462,16 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
 
             {/* Image or Detailed Preview */}
             <div className="aspect-16/10 sm:aspect-16/9 bg-black flex items-center justify-center overflow-hidden">
-              {lightboxItem.isVideo && lightboxItem.videoUrl ? (
+              {lightboxItem.isVideo && lightboxItem.videoUrl && lightboxItem.videoUrl.trim() !== '' ? (
                 <video
                   src={lightboxItem.videoUrl}
-                  poster={lightboxItem.url}
+                  poster={lightboxItem.url && lightboxItem.url.trim() !== '' ? lightboxItem.url : undefined}
                   controls
                   autoPlay
                   playsInline
                   className="w-full h-full max-h-[65vh] object-contain bg-black"
                 />
-              ) : lightboxItem.url ? (
+              ) : lightboxItem.url && lightboxItem.url.trim() !== '' ? (
                 <img
                   src={lightboxItem.url}
                   alt={lightboxItem.title}

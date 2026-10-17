@@ -343,7 +343,18 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [photos, setPhotos] = useState<Record<string, PhotoData>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_SLOTS);
-      return saved ? JSON.parse(saved) : {};
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const valid: Record<string, PhotoData> = {};
+        for (const [k, v] of Object.entries(parsed || {})) {
+          const item = v as PhotoData;
+          if (item && typeof item === 'object' && item.url && item.url.trim() !== '') {
+            valid[k] = item;
+          }
+        }
+        return valid;
+      }
+      return {};
     } catch (e) {
       return {};
     }
@@ -356,7 +367,12 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return parsed.map((item) => {
+            if (!item.url || item.url.trim() === '') {
+              return { ...item, url: '/assets/schools/heritage-academy/morning-assembly.jpg' };
+            }
+            return item;
+          });
         }
       }
       return DEFAULT_GALLERY_PHOTOS;
@@ -565,11 +581,12 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const lightweight: Record<string, PhotoData> = {};
       for (const [key, data] of Object.entries(photos)) {
-        // If data URL is huge (>100KB), strip or keep lightweight placeholder
+        if (!data || !data.url || data.url.trim() === '') continue;
+        // If data URL is huge or blob URL, store default asset path for safe pre-hydration
         if (data.url.startsWith('data:image/') && data.url.length > 20000) {
-          lightweight[key] = { ...data, url: '' };
+          lightweight[key] = { ...data, url: '/assets/church/services/hero-church.jpg' };
         } else if (data.url.startsWith('blob:')) {
-          lightweight[key] = { ...data, url: '' };
+          lightweight[key] = { ...data, url: '/assets/church/services/hero-church.jpg' };
         } else {
           lightweight[key] = data;
         }
@@ -587,7 +604,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 1. Permanent IndexedDB save
     saveGalleryItemsToIDB(galleryPhotos);
 
-    // 2. Safe localStorage save: keep items metadata but strip bloated data URLs & dead blob URLs
+    // 2. Safe localStorage save: keep items metadata but NEVER empty string url
     try {
       const sanitized = galleryPhotos.map((item) => {
         if (!item.isUserUploaded) return item;
@@ -596,9 +613,9 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (copy.videoUrl && copy.videoUrl.startsWith('blob:')) {
           delete copy.videoUrl;
         }
-        if (copy.url && (copy.url.startsWith('blob:') || copy.url.length > 20000)) {
-          // Keep item metadata but avoid 5MB quota blowup
-          copy.url = '';
+        if (!copy.url || copy.url.startsWith('blob:') || copy.url.length > 20000) {
+          // Provide safe non-empty fallback path
+          copy.url = '/assets/schools/heritage-academy/morning-assembly.jpg';
         }
         return copy;
       });

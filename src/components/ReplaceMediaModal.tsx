@@ -189,25 +189,33 @@ export const ReplaceMediaModal: React.FC<ReplaceMediaModalProps> = ({
               </span>
               <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-stone-900 border border-stone-200">
                 {isCurrentVideo ? (
-                  item.videoUrl ? (
+                  item.videoUrl && item.videoUrl.trim() !== '' ? (
                     <video
                       src={item.videoUrl}
-                      poster={item.url}
+                      poster={item.url && item.url.trim() !== '' ? item.url : undefined}
                       className="w-full h-full object-cover"
                     />
-                  ) : (
+                  ) : item.url && item.url.trim() !== '' ? (
                     <img
                       src={item.url}
                       alt={item.title}
                       className="w-full h-full object-cover opacity-80"
                     />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-stone-800 text-stone-400">
+                      <Film className="w-8 h-8 text-amber-400" />
+                    </div>
                   )
-                ) : (
+                ) : item.url && item.url.trim() !== '' ? (
                   <img
                     src={item.url}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-stone-800 text-stone-400">
+                    <Camera className="w-8 h-8 text-emerald-400" />
+                  </div>
                 )}
                 <div className="absolute top-2 left-2 z-10">
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-white backdrop-blur-xs">
@@ -222,7 +230,7 @@ export const ReplaceMediaModal: React.FC<ReplaceMediaModalProps> = ({
               <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block">
                 New Replacement File (Optional):
               </span>
-              {selectedFile && filePreviewUrl ? (
+              {selectedFile && filePreviewUrl && filePreviewUrl.trim() !== '' ? (
                 <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-stone-900 border-2 border-emerald-500">
                   {isNewFileVideo ? (
                     <video

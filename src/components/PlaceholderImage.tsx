@@ -31,7 +31,9 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
 
   // Check if user uploaded a photo via PhotoContext
   const uploaded = slotKey ? getPhoto(slotKey) : null;
-  const activeSrc = uploaded?.url || (fileLoadFailed ? null : src);
+  const validUploaded = uploaded?.url && uploaded.url.trim() !== '' ? uploaded.url : null;
+  const validPropSrc = src && src.trim() !== '' && !fileLoadFailed ? src : null;
+  const activeSrc = validUploaded || validPropSrc;
 
   const aspectClass = {
     '16:9': 'aspect-video',
