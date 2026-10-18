@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, HeartHandshake, Compass, Camera } from 'lucide-react';
+import { Menu, X, HeartHandshake, Compass, Camera, Shield } from 'lucide-react';
 import { VRAILogo } from './VRAILogo';
 import { organizationData } from '../data/organizationData';
 import { usePhotos } from '../context/PhotoContext';
@@ -25,6 +25,7 @@ interface NavbarProps {
   onNavigate: (view: NavView) => void;
   onOpenAssetGuide: () => void;
   onOpenDonateModal: () => void;
+  onOpenLogoPreview?: (tab?: 'church' | 'school' | 'both') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -32,10 +33,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   onOpenAssetGuide,
   onOpenDonateModal,
+  onOpenLogoPreview,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false);
-  const { photos, openMultiUploadModal, galleryPhotos } = usePhotos();
+  const { photos, openMultiUploadModal, galleryPhotos, schoolLogoUrl } = usePhotos();
   const uploadedCount = Object.keys(photos).length + galleryPhotos.filter(p => p.isUserUploaded).length;
 
   const navLinks: { label: string; view: NavView; isSchool?: boolean }[] = [
@@ -110,6 +112,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <span aria-hidden="true">·</span>
             <button
+              onClick={() => onOpenLogoPreview?.('both')}
+              className="text-amber-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"
+              title="Preview Official Church and School Logos"
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-400" />
+              <span>Official Logos</span>
+            </button>
+            <span aria-hidden="true">·</span>
+            <button
               onClick={onOpenAssetGuide}
               className="text-stone-300 hover:text-white font-medium flex items-center gap-1 transition-colors"
             >
@@ -173,8 +184,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </button>
                       <button
                         onClick={() => handleLinkClick('heritage-academy')}
-                        className="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center justify-between"
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2.5"
                       >
+                        <img 
+                          src={schoolLogoUrl} 
+                          alt="School Crest" 
+                          className="w-7 h-7 object-contain shrink-0 rounded-full border border-stone-200 bg-white" 
+                        />
                         <div>
                           <p className="font-semibold text-slate-900">Victorious Heritage Model Academy</p>
                           <p className="text-[11px] text-stone-500">Nursery &amp; Primary Education</p>
@@ -322,6 +338,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Camera className="w-3.5 h-3.5 text-emerald-700" />
               <span>Upload Photos ({uploadedCount} Photos)</span>
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenLogoPreview?.('both');
+              }}
+              className="text-left px-3 py-2 text-xs text-amber-900 bg-amber-50 hover:bg-amber-100 rounded font-bold flex items-center gap-1.5 mt-1"
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-700" />
+              <span>Preview Official Logos &amp; Crests</span>
             </button>
 
             {/* Social Links in Mobile Menu */}

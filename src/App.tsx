@@ -6,6 +6,7 @@ import QuickDonateModal from './components/QuickDonateModal';
 import { PhotoUploadModal } from './components/PhotoUploadModal';
 import { MultiPhotoUploadModal } from './components/MultiPhotoUploadModal';
 import { FloatingHelpChildButton } from './components/FloatingHelpChildButton';
+import { LogoPreviewModal } from './components/LogoPreviewModal';
 
 // Views
 import HomeView from './views/HomeView';
@@ -29,6 +30,13 @@ export function App() {
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [donateDesignation, setDonateDesignation] = useState<'heritage' | 'vocational' | 'both' | 'general'>('both');
   const [selectedNewsStoryId, setSelectedNewsStoryId] = useState<string | null>(null);
+  const [isLogoPreviewOpen, setIsLogoPreviewOpen] = useState(false);
+  const [logoPreviewTab, setLogoPreviewTab] = useState<'both' | 'church' | 'school'>('both');
+
+  const handleOpenLogoPreview = (tab: 'both' | 'church' | 'school' = 'both') => {
+    setLogoPreviewTab(tab);
+    setIsLogoPreviewOpen(true);
+  };
 
   // Listen to hash changes for deep links if any
   useEffect(() => {
@@ -91,6 +99,7 @@ export function App() {
             onOpenAssetGuide={() => setIsAssetGuideOpen(true)}
             onOpenDonateModal={handleOpenDonateModal}
             onSelectStory={handleSelectStory}
+            onOpenLogoPreview={handleOpenLogoPreview}
           />
         );
       case 'school':
@@ -99,6 +108,7 @@ export function App() {
             onNavigate={handleNavigate}
             onOpenAssetGuide={() => setIsAssetGuideOpen(true)}
             onOpenDonateModal={handleOpenDonateModal}
+            onOpenLogoPreview={handleOpenLogoPreview}
           />
         );
       case 'heritage-academy':
@@ -217,6 +227,7 @@ export function App() {
         onNavigate={handleNavigate}
         onOpenAssetGuide={() => setIsAssetGuideOpen(true)}
         onOpenDonateModal={() => handleOpenDonateModal('both')}
+        onOpenLogoPreview={handleOpenLogoPreview}
       />
 
       {/* Main Page Content */}
@@ -229,6 +240,14 @@ export function App() {
         onNavigate={handleNavigate}
         onOpenAssetGuide={() => setIsAssetGuideOpen(true)}
         onOpenDonateModal={() => handleOpenDonateModal('both')}
+        onOpenLogoPreview={handleOpenLogoPreview}
+      />
+
+      {/* Interactive Official Seals & Logos Modal */}
+      <LogoPreviewModal
+        isOpen={isLogoPreviewOpen}
+        onClose={() => setIsLogoPreviewOpen(false)}
+        initialTab={logoPreviewTab}
       />
 
       {/* Interactive Asset Guide & Content Replacement Documentation Modal */}

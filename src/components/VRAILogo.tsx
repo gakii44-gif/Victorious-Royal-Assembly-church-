@@ -1,10 +1,12 @@
 import React from 'react';
+import { usePhotos } from '../context/PhotoContext';
 
 interface VRAILogoProps {
   size?: number | string;
   className?: string;
   showWordmark?: boolean;
   wordmarkClassName?: string;
+  customSrc?: string;
 }
 
 export const VRAILogo: React.FC<VRAILogoProps> = ({
@@ -12,11 +14,22 @@ export const VRAILogo: React.FC<VRAILogoProps> = ({
   className = '',
   showWordmark = false,
   wordmarkClassName = '',
+  customSrc,
 }) => {
+  let churchLogo = '/vrai-church-logo.svg';
+  try {
+    const photoCtx = usePhotos();
+    if (photoCtx?.churchLogoUrl) {
+      churchLogo = photoCtx.churchLogoUrl;
+    }
+  } catch {}
+
+  const logoSrc = customSrc || churchLogo;
+
   return (
     <div className={`flex items-center gap-3 shrink-0 ${className}`}>
       <img
-        src="/vrai-logo.svg"
+        src={logoSrc}
         alt="Victorious Royal Assembly International (VRAI) Seal"
         width={typeof size === 'number' ? size : undefined}
         height={typeof size === 'number' ? size : undefined}
@@ -24,7 +37,7 @@ export const VRAILogo: React.FC<VRAILogoProps> = ({
           width: typeof size === 'number' ? `${size}px` : size,
           height: typeof size === 'number' ? `${size}px` : size,
         }}
-        className="shrink-0 drop-shadow-sm select-none"
+        className="shrink-0 drop-shadow-sm select-none object-contain"
         loading="eager"
       />
       {showWordmark && (

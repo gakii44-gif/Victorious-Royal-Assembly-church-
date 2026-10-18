@@ -1,19 +1,21 @@
 import React from 'react';
 import { VRAILogo } from './VRAILogo';
 import { NavView } from './Navbar';
-import { MapPin, Mail, Phone, ExternalLink, ShieldCheck, HeartHandshake, Compass } from 'lucide-react';
+import { MapPin, Mail, Phone, ExternalLink, ShieldCheck, HeartHandshake, Compass, Shield } from 'lucide-react';
 import { organizationData } from '../data/organizationData';
 
 interface FooterProps {
   onNavigate: (view: NavView) => void;
   onOpenAssetGuide: () => void;
   onOpenDonateModal: () => void;
+  onOpenLogoPreview?: (tab?: 'church' | 'school' | 'both') => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   onNavigate,
   onOpenAssetGuide,
   onOpenDonateModal,
+  onOpenLogoPreview,
 }) => {
   const handleNav = (view: NavView) => {
     onNavigate(view);
@@ -31,13 +33,22 @@ export const Footer: React.FC<FooterProps> = ({
               <strong>Verified Donor Transparency Commitment:</strong> 100% of designated school donations go directly to classrooms, learning equipment, and pupil nutrition in Juba.
             </span>
           </div>
-          <button
-            onClick={onOpenAssetGuide}
-            className="flex items-center gap-1.5 text-stone-300 hover:text-white transition-colors underline underline-offset-4"
-          >
-            <Compass className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Site Asset &amp; Placeholder Documentation</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              onClick={() => onOpenLogoPreview?.('both')}
+              className="flex items-center gap-1.5 text-amber-300 hover:text-white transition-colors underline underline-offset-4"
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-400" />
+              <span>Preview Official Logos &amp; Insignia</span>
+            </button>
+            <button
+              onClick={onOpenAssetGuide}
+              className="flex items-center gap-1.5 text-stone-300 hover:text-white transition-colors underline underline-offset-4"
+            >
+              <Compass className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Site Asset &amp; Placeholder Documentation</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -211,7 +222,13 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button onClick={() => handleNav('gallery')} className="hover:text-emerald-300 text-emerald-400 font-semibold transition-colors text-left flex items-center gap-1.5">
-                  <span>Photo Gallery (4 Sections) &rarr;</span>
+                  <span>Photo Gallery (5 Sections) &rarr;</span>
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onOpenLogoPreview?.('both')} className="hover:text-amber-300 text-stone-300 transition-colors text-left flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Official Church &amp; School Logos</span>
                 </button>
               </li>
               <li>

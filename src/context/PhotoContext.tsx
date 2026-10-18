@@ -83,12 +83,27 @@ interface PhotoContextType {
 
   // Storage hydration state
   isStorageReady: boolean;
+
+  // Dedicated Official Church & School Logo Management
+  churchLogoUrl: string;
+  schoolLogoUrl: string;
+  uploadChurchLogo: (file: File) => Promise<string>;
+  uploadSchoolLogo: (file: File) => Promise<string>;
+  resetChurchLogo: () => void;
+  resetSchoolLogo: () => void;
+  isChurchLogoCustom: boolean;
+  isSchoolLogoCustom: boolean;
 }
 
 const PhotoContext = createContext<PhotoContextType | undefined>(undefined);
 
 const STORAGE_KEY_SLOTS = 'vrai_church_uploaded_photos';
 const STORAGE_KEY_GALLERY = 'vrai_church_gallery_photos';
+const STORAGE_KEY_CHURCH_LOGO = 'vrai_church_custom_logo_key';
+const STORAGE_KEY_SCHOOL_LOGO = 'vrai_school_custom_logo_key';
+
+const DEFAULT_CHURCH_LOGO_URL = '/vrai-church-logo.svg';
+const DEFAULT_SCHOOL_LOGO_URL = '/victorious-heritage-school-logo.svg';
 
 // Default initial curated gallery placeholders
 const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
@@ -384,6 +399,12 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isStorageReady, setIsStorageReady] = useState(false);
   const activeObjectUrls = useRef<Set<string>>(new Set());
 
+  // Logo management state
+  const [churchLogoUrl, setChurchLogoUrl] = useState<string>(DEFAULT_CHURCH_LOGO_URL);
+  const [schoolLogoUrl, setSchoolLogoUrl] = useState<string>(DEFAULT_SCHOOL_LOGO_URL);
+  const [isChurchLogoCustom, setIsChurchLogoCustom] = useState(false);
+  const [isSchoolLogoCustom, setIsSchoolLogoCustom] = useState(false);
+
   // Helper to safely track created object URLs
   const createTrackedUrl = (blob: Blob): string => {
     const url = URL.createObjectURL(blob);
@@ -541,6 +562,25 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 }
               }
             }
+          }
+        } catch {}
+
+        // D. Hydrate Custom Church and School Logos if uploaded
+        try {
+          const churchBlob = await getMediaFile('media_church_logo');
+          if (churchBlob && !isCancelled) {
+            const url = createTrackedUrl(churchBlob);
+            setChurchLogoUrl(url);
+            setIsChurchLogoCustom(true);
+          }
+        } catch {}
+
+        try {
+          const schoolBlob = await getMediaFile('media_school_logo');
+          if (schoolBlob && !isCancelled) {
+            const url = createTrackedUrl(schoolBlob);
+            setSchoolLogoUrl(url);
+            setIsSchoolLogoCustom(true);
           }
         } catch {}
 
@@ -857,6 +897,46 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsMultiUploadOpen(false);
   };
 
+  const uploadChurchLogo = async (file: File): Promise<string> => {
+    await saveMediaFile('media_church_logo', file);
+    const url = createTrackedUrl(file);
+    setChurchLogoUrl(url);
+    setIsChurchLogoCustom(true);
+    try {
+      localStorage.setItem(STORAGE_KEY_CHURCH_LOGO, 'true');
+    } catch {}
+    return url;
+  };
+
+  const uploadSchoolLogo = async (file: File): Promise<string> => {
+    await saveMediaFile('media_school_logo', file);
+    const url = createTrackedUrl(file);
+    setSchoolLogoUrl(url);
+    setIsSchoolLogoCustom(true);
+    try {
+      localStorage.setItem(STORAGE_KEY_SCHOOL_LOGO, 'true');
+    } catch {}
+    return url;
+  };
+
+  const resetChurchLogo = async () => {
+    try {
+      await deleteMediaFile('media_church_logo');
+      localStorage.removeItem(STORAGE_KEY_CHURCH_LOGO);
+    } catch {}
+    setChurchLogoUrl(DEFAULT_CHURCH_LOGO_URL);
+    setIsChurchLogoCustom(false);
+  };
+
+  const resetSchoolLogo = async () => {
+    try {
+      await deleteMediaFile('media_school_logo');
+      localStorage.removeItem(STORAGE_KEY_SCHOOL_LOGO);
+    } catch {}
+    setSchoolLogoUrl(DEFAULT_SCHOOL_LOGO_URL);
+    setIsSchoolLogoCustom(false);
+  };
+
   return (
     <PhotoContext.Provider
       value={{
@@ -880,6 +960,14 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         closeMultiUploadModal,
         multiUploadDefaultCategory,
         isStorageReady,
+        churchLogoUrl,
+        schoolLogoUrl,
+        uploadChurchLogo,
+        uploadSchoolLogo,
+        resetChurchLogo,
+        resetSchoolLogo,
+        isChurchLogoCustom,
+        isSchoolLogoCustom,
       }}
     >
       {children}

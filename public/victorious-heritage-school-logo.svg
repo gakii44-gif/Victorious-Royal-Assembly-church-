@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%" role="img" aria-label="Victorious Heritage Model Nursery & Primary School Official Crest">
+  <defs>
+    <!-- Upper text path for Victorious Heritage Model Nursery & Primary School -->
+    <path id="schoolUpperArc" d="M 175,440 A 325,325 0 1,1 825,440" fill="none" />
+    
+    <!-- Lower text path for * Juba, South Sudan * -->
+    <path id="schoolLowerArc" d="M 800,470 A 325,325 0 0,1 200,470" fill="none" />
+
+    <!-- Ribbon text path for KNOWLEDGE IS VICTORY -->
+    <path id="ribbonBannerArc" d="M 280,685 Q 500,755 720,685" fill="none" />
+
+    <!-- Mini banner under book: I AM VICTORIOUS -->
+    <path id="miniBannerArc" d="M 410,515 Q 500,528 590,515" fill="none" />
+
+    <filter id="schoolDropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+
+    <linearGradient id="goldStarFacet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5C77A" />
+      <stop offset="50%" stop-color="#C59E4E" />
+      <stop offset="100%" stop-color="#A57C32" />
+    </linearGradient>
+  </defs>
+
+  <!-- Pure White Background -->
+  <rect width="1000" height="1000" fill="#ffffff" />
+
+  <!-- 8-POINT FACETED GOLDEN STAR BEHIND THE CIRCULAR CREST -->
+  <g id="facetedStar" filter="url(#schoolDropShadow)">
+    <!-- 8 Triangular Star Points originating from center (500, 440) -->
+    <!-- Point 1: Top (0 deg) -->
+    <polygon points="500,105 470,300 500,440" fill="#D8B568" />
+    <polygon points="500,105 530,300 500,440" fill="#B99245" />
+
+    <!-- Point 2: Top-Right (45 deg) -->
+    <polygon points="735,205 600,320 500,440" fill="#D8B568" />
+    <polygon points="735,205 650,380 500,440" fill="#B99245" />
+
+    <!-- Point 3: Right (90 deg) -->
+    <polygon points="835,440 680,410 500,440" fill="#D8B568" />
+    <polygon points="835,440 680,470 500,440" fill="#B99245" />
+
+    <!-- Point 4: Bottom-Right (135 deg) -->
+    <polygon points="735,675 650,500 500,440" fill="#D8B568" />
+    <polygon points="735,675 580,560 500,440" fill="#B99245" />
+
+    <!-- Point 5: Bottom (180 deg) -->
+    <polygon points="500,775 470,580 500,440" fill="#D8B568" />
+    <polygon points="500,775 530,580 500,440" fill="#B99245" />
+
+    <!-- Point 6: Bottom-Left (225 deg) -->
+    <polygon points="265,675 350,500 500,440" fill="#D8B568" />
+    <polygon points="265,675 420,560 500,440" fill="#B99245" />
+
+    <!-- Point 7: Left (270 deg) -->
+    <polygon points="165,440 320,410 500,440" fill="#D8B568" />
+    <polygon points="165,440 320,470 500,440" fill="#B99245" />
+
+    <!-- Point 8: Top-Left (315 deg) -->
+    <polygon points="265,205 400,320 500,440" fill="#D8B568" />
+    <polygon points="265,205 350,380 500,440" fill="#B99245" />
+  </g>
+
+  <!-- GREEN RIBBON TAILS ON LEFT & RIGHT (Extending down below the banner) -->
+  <g id="ribbonTails" filter="url(#schoolDropShadow)">
+    <!-- Left Ribbon Tail with V-Notch -->
+    <polygon points="225,480 295,480 295,780 260,735 225,780" fill="#0A5C36" stroke="#064226" stroke-width="2" />
+    <!-- Left Fold Shadow -->
+    <polygon points="225,480 250,510 225,510" fill="#063820" />
+
+    <!-- Right Ribbon Tail with V-Notch -->
+    <polygon points="775,480 705,480 705,780 740,735 775,780" fill="#0A5C36" stroke="#064226" stroke-width="2" />
+    <!-- Right Fold Shadow -->
+    <polygon points="775,480 750,510 775,510" fill="#063820" />
+  </g>
+
+  <!-- MAIN CIRCULAR SEAL BODY -->
+  <g id="circularSeal" filter="url(#schoolDropShadow)">
+    <!-- Outer Dark Green Circle Ring -->
+    <circle cx="500" cy="440" r="370" fill="#0B5E34" stroke="#ffffff" stroke-width="6" />
+    <circle cx="500" cy="440" r="362" fill="none" stroke="#ffffff" stroke-width="3" />
+
+    <!-- Inner Circle Border Separator -->
+    <circle cx="500" cy="440" r="270" fill="#ffffff" stroke="#ffffff" stroke-width="4" />
+    <circle cx="500" cy="440" r="265" fill="#ffffff" stroke="#0B5E34" stroke-width="2" />
+
+    <!-- Upper Arc Text: Victorious Heritage Model Nursery & Primary School -->
+    <text font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="34" font-weight="800" fill="#ffffff" letter-spacing="1.2">
+      <textPath href="#schoolUpperArc" startOffset="50%" text-anchor="middle">
+        Victorious Heritage Model Nursery &amp; Primary School
+      </textPath>
+    </text>
+
+    <!-- Lower Arc Text: * Juba, South Sudan * -->
+    <text font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff" letter-spacing="3">
+      <textPath href="#schoolLowerArc" startOffset="50%" text-anchor="middle">
+        * Juba, South Sudan *
+      </textPath>
+    </text>
+  </g>
+
+  <!-- INNER EMBLEM: GLOBE, CHILDREN RING, CROSS & BIBLE -->
+  <g id="innerEmblem">
+    <!-- Blue Globe -->
+    <circle cx="500" cy="385" r="95" fill="#38BDF8" stroke="#0284C7" stroke-width="2" />
+    
+    <!-- Continents in Green -->
+    <path d="M 450,340 Q 480,330 500,345 Q 520,360 510,380 Q 480,390 460,370 Z" fill="#22C55E" opacity="0.9" />
+    <path d="M 520,380 Q 560,370 580,395 Q 570,420 540,430 Q 510,410 520,380 Z" fill="#22C55E" opacity="0.9" />
+    <path d="M 430,390 Q 460,400 450,440 Q 425,430 430,390 Z" fill="#22C55E" opacity="0.9" />
+    
+    <!-- Latitude / Longitude Equator Ring -->
+    <ellipse cx="500" cy="385" rx="95" ry="32" fill="none" stroke="#BAE6FD" stroke-width="1.5" stroke-dasharray="3,3" />
+
+    <!-- MULTI-COLORED RING OF CHILDREN HOLDING HANDS AROUND THE WORLD -->
+    <!-- Diverse child figures around circumference -->
+    <g id="childrenGarland">
+      <!-- Child 1: Top Left (Red) -->
+      <circle cx="430" cy="325" r="7" fill="#F87171" />
+      <path d="M 423,332 L 437,332 L 440,350 L 420,350 Z" fill="#DC2626" />
+
+      <!-- Child 2: Top (Yellow) -->
+      <circle cx="500" cy="310" r="7" fill="#FDE047" />
+      <path d="M 493,317 L 507,317 L 510,335 L 490,335 Z" fill="#CA8A04" />
+
+      <!-- Child 3: Top Right (Blue) -->
+      <circle cx="570" cy="325" r="7" fill="#60A5FA" />
+      <path d="M 563,332 L 577,332 L 580,350 L 560,350 Z" fill="#2563EB" />
+
+      <!-- Child 4: Far Right (Orange) -->
+      <circle cx="610" cy="385" r="7" fill="#FB923C" />
+      <path d="M 603,392 L 617,392 L 620,410 L 600,410 Z" fill="#EA580C" />
+
+      <!-- Child 5: Bottom Right (Green) -->
+      <circle cx="570" cy="440" r="7" fill="#4ADE80" />
+      <path d="M 563,447 L 577,447 L 580,465 L 560,465 Z" fill="#16A34A" />
+
+      <!-- Child 6: Bottom (Purple) -->
+      <circle cx="500" cy="455" r="7" fill="#C084FC" />
+      <path d="M 493,462 L 507,462 L 510,480 L 490,480 Z" fill="#9333EA" />
+
+      <!-- Child 7: Bottom Left (Pink) -->
+      <circle cx="430" cy="440" r="7" fill="#F472B6" />
+      <path d="M 423,447 L 437,447 L 440,465 L 420,465 Z" fill="#DB2777" />
+
+      <!-- Child 8: Far Left (Teal) -->
+      <circle cx="390" cy="385" r="7" fill="#2DD4BF" />
+      <path d="M 383,392 L 397,392 L 400,410 L 380,410 Z" fill="#0D9488" />
+
+      <!-- Connected hands garland line -->
+      <circle cx="500" cy="385" r="115" fill="none" stroke="#FBBF24" stroke-width="2.5" />
+    </g>
+
+    <!-- BOLD RED CHRISTIAN CROSS OVER THE GLOBE -->
+    <g id="redCross" filter="url(#schoolDropShadow)">
+      <!-- Vertical Beam -->
+      <rect x="487" y="315" width="26" height="110" rx="3" fill="#DC2626" stroke="#991B1B" stroke-width="2" />
+      <!-- Horizontal Crossbar -->
+      <rect x="458" y="340" width="84" height="24" rx="3" fill="#DC2626" stroke="#991B1B" stroke-width="2" />
+      <!-- Inner Cross Highlight -->
+      <rect x="495" y="318" width="6" height="104" fill="#F87171" />
+      <rect x="461" y="348" width="78" height="6" fill="#F87171" />
+    </g>
+
+    <!-- OPEN BOOK OF KNOWLEDGE BELOW GLOBE -->
+    <g id="openBook">
+      <!-- Pedestal / Stand -->
+      <polygon points="460,480 540,480 525,495 475,495" fill="#78716C" />
+      
+      <!-- Book Pages -->
+      <path d="M 435,465 Q 500,455 500,478 Q 500,455 565,465 L 560,490 Q 500,480 500,495 Q 500,480 440,490 Z" fill="#ffffff" stroke="#1C1917" stroke-width="2.5" />
+      <!-- Book Center Spine -->
+      <line x1="500" y1="465" x2="500" y2="495" stroke="#1C1917" stroke-width="3" />
+      <!-- Scripture Lines in book -->
+      <line x1="448" y1="473" x2="488" y2="471" stroke="#44403C" stroke-width="1.5" />
+      <line x1="448" y1="479" x2="488" y2="477" stroke="#44403C" stroke-width="1.5" />
+      <line x1="448" y1="485" x2="485" y2="483" stroke="#44403C" stroke-width="1.5" />
+      <line x1="512" y1="471" x2="552" y2="473" stroke="#44403C" stroke-width="1.5" />
+      <line x1="512" y1="477" x2="552" y2="479" stroke="#44403C" stroke-width="1.5" />
+      <line x1="515" y1="483" x2="552" y2="485" stroke="#44403C" stroke-width="1.5" />
+    </g>
+
+    <!-- MINI GREEN BANNER: I AM VICTORIOUS -->
+    <g id="miniBanner">
+      <path d="M 390,500 L 610,500 L 595,530 L 405,530 Z" fill="#15803D" stroke="#ffffff" stroke-width="1.5" />
+      <text font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="15" font-weight="900" fill="#ffffff" letter-spacing="2">
+        <textPath href="#miniBannerArc" startOffset="50%" text-anchor="middle">
+          I AM VICTORIOUS
+        </textPath>
+      </text>
+    </g>
+  </g>
+
+  <!-- LARGE CURVED GREEN BANNER: KNOWLEDGE IS VICTORY -->
+  <g id="bottomRibbonBanner" filter="url(#schoolDropShadow)">
+    <!-- Main Ribbon Arc -->
+    <path d="M 220,630 
+             Q 500,750 780,630 
+             L 775,720 
+             Q 500,830 225,720 Z" 
+          fill="#0B5E34" stroke="#ffffff" stroke-width="4" />
+
+    <!-- Ribbon Arc Text: KNOWLEDGE IS VICTORY -->
+    <text font-family="'Plus Jakarta Sans', 'Arial Black', Impact, sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="4">
+      <textPath href="#ribbonBannerArc" startOffset="50%" text-anchor="middle">
+        KNOWLEDGE IS VICTORY
+      </textPath>
+    </text>
+  </g>
+</svg>

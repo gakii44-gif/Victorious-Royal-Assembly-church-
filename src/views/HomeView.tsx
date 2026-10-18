@@ -9,6 +9,7 @@ import {
   ArrowRight, 
   CheckCircle2, 
   ShieldCheck, 
+  Shield,
   BookOpen, 
   Church,
   Flame,
@@ -39,6 +40,7 @@ interface HomeViewProps {
   onOpenAssetGuide: () => void;
   onOpenDonateModal: (designation?: 'heritage' | 'vocational' | 'both' | 'general' | 'education' | 'missions') => void;
   onSelectStory?: (storyId: string) => void;
+  onOpenLogoPreview?: (tab?: 'church' | 'school' | 'both') => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -46,6 +48,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenAssetGuide,
   onOpenDonateModal,
   onSelectStory,
+  onOpenLogoPreview,
 }) => {
   const { hero, welcome, missionAndVision, ministries, school, schools, missionsAndOutreach, partnership, newsStories, callToAction, socialLinks } = organizationData;
   const { getPhoto, openUploadModal, galleryPhotos, openMultiUploadModal } = usePhotos();
@@ -155,13 +158,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     Juba, Central Equatoria State · Republic of South Sudan
                   </p>
 
-                  <div className="mt-4 pt-3 border-t border-stone-200 w-full flex items-center justify-center">
+                  <div className="mt-4 pt-3 border-t border-stone-200 w-full flex flex-col gap-2 items-center justify-center">
                     <button
                       onClick={() => openUploadModal(hero.photoSlotKey, 'Homepage Hero Banner Photograph')}
-                      className="px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-200"
+                      className="w-full justify-center px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-200"
                     >
                       <Camera className="w-3.5 h-3.5 text-emerald-700" />
                       <span>Upload Real Church Photo Here</span>
+                    </button>
+                    <button
+                      onClick={() => onOpenLogoPreview?.('both')}
+                      className="w-full justify-center px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-md transition-colors flex items-center gap-1.5 border border-amber-200"
+                    >
+                      <Shield className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Inspect Church &amp; School Official Crests</span>
                     </button>
                   </div>
                 </div>
@@ -289,6 +299,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
             Victorious Royal Assembly International directly operates two complementary institutions with equal strategic priority: equipping children with foundational literacy and empowering youth with market-ready technical trades.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => onNavigate('school')}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
+            >
+              <BookOpen className="w-4 h-4 text-emerald-300" />
+              <span>Dedicated Schools Portal (Primary &amp; Vocational)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onOpenLogoPreview?.('school')}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-stone-700 bg-white hover:bg-stone-50 border border-stone-300 rounded-lg shadow-2xs flex items-center gap-1.5 transition-colors"
+            >
+              <Shield className="w-4 h-4 text-amber-600" />
+              <span>Preview School Crest</span>
+            </button>
+          </div>
         </div>
 
         {/* Dual School Equal Grid */}

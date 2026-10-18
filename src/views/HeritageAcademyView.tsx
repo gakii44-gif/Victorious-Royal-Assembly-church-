@@ -20,6 +20,7 @@ import {
   Droplet,
   ArrowRight
 } from 'lucide-react';
+import { usePhotos } from '../context/PhotoContext';
 
 interface HeritageAcademyViewProps {
   onNavigate: (view: NavView) => void;
@@ -33,46 +34,60 @@ export const HeritageAcademyView: React.FC<HeritageAcademyViewProps> = ({
   onOpenDonateModal,
 }) => {
   const school = organizationData.schools.heritageAcademy;
+  const { schoolLogoUrl } = usePhotos();
 
   return (
     <div className="space-y-16 pb-20">
       {/* School Header Banner */}
       <section className="bg-stone-900 text-white py-16 px-4 sm:px-8 border-b border-stone-800">
-        <div className="max-w-7xl mx-auto space-y-4">
-          <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-emerald-400 font-semibold">
-            <span>Primary &amp; Nursery Education</span>
-            <span aria-hidden="true" className="text-stone-600">·</span>
-            <span>{school.level}</span>
-            <span aria-hidden="true" className="text-stone-600">·</span>
-            <span>Juba, South Sudan</span>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="space-y-4 max-w-3xl">
+            <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-emerald-400 font-semibold">
+              <span>Primary &amp; Nursery Education</span>
+              <span aria-hidden="true" className="text-stone-600">·</span>
+              <span>{school.level}</span>
+              <span aria-hidden="true" className="text-stone-600">·</span>
+              <span>Juba, South Sudan</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-white font-heading">
+              {school.name}
+            </h1>
+
+            <p className="text-base sm:text-lg text-amber-300 max-w-3xl font-semibold italic">
+              "{school.motto}" · "I Am Victorious"
+            </p>
+
+            <p className="text-sm text-stone-300 max-w-3xl leading-relaxed">
+              {school.overview}
+            </p>
+
+            <div className="pt-4 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => onOpenDonateModal('heritage')}
+                className="px-6 py-3 text-xs sm:text-sm font-semibold uppercase tracking-wider text-white bg-emerald-700 hover:bg-emerald-600 rounded-md transition-colors shadow-md flex items-center gap-2"
+              >
+                <HeartHandshake className="w-4 h-4 text-emerald-300" />
+                <span>Sponsor a Heritage Pupil or Classroom</span>
+              </button>
+              <button
+                onClick={() => onNavigate('vocational-school')}
+                className="px-4 py-3 text-xs sm:text-sm font-medium text-stone-300 hover:text-white bg-stone-800 hover:bg-stone-700 border border-stone-700 rounded-md transition-colors"
+              >
+                View Vocational School Sister Wing &rarr;
+              </button>
+            </div>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white font-heading">
-            {school.name}
-          </h1>
-
-          <p className="text-base sm:text-lg text-stone-300 max-w-3xl italic">
-            "{school.motto}"
-          </p>
-
-          <p className="text-sm text-stone-400 max-w-3xl leading-relaxed">
-            {school.overview}
-          </p>
-
-          <div className="pt-4 flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => onOpenDonateModal('heritage')}
-              className="px-6 py-3 text-xs sm:text-sm font-semibold uppercase tracking-wider text-white bg-emerald-700 hover:bg-emerald-600 rounded-md transition-colors shadow-md flex items-center gap-2"
-            >
-              <HeartHandshake className="w-4 h-4 text-emerald-300" />
-              <span>Sponsor a Heritage Pupil or Classroom</span>
-            </button>
-            <button
-              onClick={() => onNavigate('vocational-school')}
-              className="px-4 py-3 text-xs sm:text-sm font-medium text-stone-300 hover:text-white bg-stone-800 hover:bg-stone-700 border border-stone-700 rounded-md transition-colors"
-            >
-              View Vocational School Sister Wing &rarr;
-            </button>
+          {/* School Crest Display Card */}
+          <div className="shrink-0 p-5 bg-white/10 rounded-2xl border border-stone-700/80 backdrop-blur-xs flex flex-col items-center text-center max-w-xs shadow-xl">
+            <img 
+              src={schoolLogoUrl} 
+              alt="Victorious Heritage School Official Crest" 
+              className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-md transition-transform hover:scale-105 duration-300" 
+            />
+            <span className="text-xs font-bold text-amber-300 mt-2">Official School Crest</span>
+            <span className="text-[11px] text-stone-300">"Knowledge is Victory"</span>
           </div>
         </div>
       </section>

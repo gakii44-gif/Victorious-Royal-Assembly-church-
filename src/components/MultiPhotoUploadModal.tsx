@@ -238,7 +238,7 @@ export const MultiPhotoUploadModal: React.FC = () => {
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
                   1. Choose Section:
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                   {categories.map((cat) => {
                     const isSelected = selectedCategory === cat.id;
                     return (
