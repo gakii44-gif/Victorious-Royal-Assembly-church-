@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="churchBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#062e0b"/>
+      <stop offset="50%" stop-color="#0c4a16"/>
+      <stop offset="100%" stop-color="#052409"/>
+    </linearGradient>
+    <linearGradient id="goldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#eab308" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="altarLight" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#fef9c3" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#eab308" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#062e0b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Sanctuary -->
+  <rect width="1200" height="800" fill="url(#churchBg)"/>
+  <circle cx="600" cy="240" r="380" fill="url(#altarLight)"/>
+
+  <!-- Altar Architecture & Cross -->
+  <path d="M 200,800 L 350,300 L 600,180 L 850,300 L 1000,800 Z" fill="#083810" opacity="0.6"/>
+  <g transform="translate(600, 240)">
+    <!-- Radiant Cross -->
+    <circle cx="0" cy="0" r="140" fill="none" stroke="#fef08a" stroke-width="3" stroke-dasharray="6,6" opacity="0.5"/>
+    <rect x="-14" y="-120" width="28" height="200" rx="6" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
+    <rect x="-70" y="-70" width="140" height="28" rx="6" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
+    <circle cx="0" cy="-56" r="8" fill="#ffffff"/>
+  </g>
+
+  <!-- Word of Faith Pulpit -->
+  <path d="M 460,520 L 740,520 L 700,740 L 500,740 Z" fill="#14532d" stroke="#22c55e" stroke-width="3"/>
+  <rect x="440" y="500" width="320" height="25" rx="6" fill="#166534" stroke="#86efac" stroke-width="1.5"/>
+  <text x="600" y="590" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="20" font-weight="900" fill="#fef08a" text-anchor="middle" letter-spacing="3">VICTORIOUS ROYAL ASSEMBLY</text>
+  <text x="600" y="625" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="14" font-weight="700" fill="#86efac" text-anchor="middle" letter-spacing="2">WORD OF FAITH HEALING &amp; DELIVERANCE</text>
+
+  <!-- Open Altar Scripture -->
+  <g transform="translate(600, 490) scale(0.9)">
+    <path d="M -60,0 Q -30,-15 0,0 Q 30,-15 60,0 L 55,25 Q 30,10 0,25 Q -30,10 -55,25 Z" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+    <line x1="0" y1="-5" x2="0" y2="25" stroke="#ca8a04" stroke-width="2"/>
+    <line x1="-45" y1="8" x2="-10" y2="8" stroke="#a16207" stroke-width="1.5"/>
+    <line x1="-45" y1="15" x2="-10" y2="15" stroke="#a16207" stroke-width="1.5"/>
+    <line x1="10" y1="8" x2="45" y2="8" stroke="#a16207" stroke-width="1.5"/>
+    <line x1="10" y1="15" x2="45" y2="15" stroke="#a16207" stroke-width="1.5"/>
+  </g>
+
+  <!-- Congregation in Worship Silhouettes with Raised Hands -->
+  <g fill="#021a05" opacity="0.95">
+    <!-- Center worshippers -->
+    <path d="M 540,800 Q 550,680 570,660 Q 560,630 580,630 Q 600,630 590,660 Q 610,680 620,800 Z"/>
+    <!-- Left worshipper with raised hands -->
+    <path d="M 320,800 Q 330,670 350,650 Q 340,620 360,620 Q 380,620 370,650 Q 390,670 400,800 Z"/>
+    <path d="M 345,670 Q 320,620 310,580 Q 315,575 325,585 Q 345,630 355,670 Z"/>
+    <path d="M 375,670 Q 400,620 410,580 Q 405,575 395,585 Q 375,630 365,670 Z"/>
+    <!-- Right worshipper with raised hands -->
+    <path d="M 800,800 Q 810,670 830,650 Q 820,620 840,620 Q 860,620 850,650 Q 870,670 880,800 Z"/>
+    <path d="M 825,670 Q 800,620 790,580 Q 795,575 805,585 Q 825,630 835,670 Z"/>
+    <path d="M 855,670 Q 880,620 890,580 Q 885,575 875,585 Q 855,630 845,670 Z"/>
+    <!-- Additional congregation rows -->
+    <path d="M 100,800 Q 140,710 180,800 Z"/>
+    <path d="M 220,800 Q 250,700 290,800 Z"/>
+    <path d="M 920,800 Q 960,700 1000,800 Z"/>
+    <path d="M 1040,800 Q 1070,720 1110,800 Z"/>
+  </g>
+
+  <!-- Anointing Dove Symbol at Top Center -->
+  <g transform="translate(600, 110) scale(0.8)">
+    <path d="M 0,-20 Q 20,-10 35,5 Q 50,0 70,-10 Q 55,20 35,25 Q 10,25 0,35 Q -10,25 -35,25 Q -55,20 -70,-10 Q -50,0 -35,5 Q -20,-10 0,-20 Z" fill="#ffffff" stroke="#fef08a" stroke-width="2"/>
+    <circle cx="0" cy="5" r="4" fill="#facc15"/>
+  </g>
+
+  <!-- Lower Title Banner -->
+  <rect x="0" y="730" width="1200" height="70" fill="#041a06" opacity="0.9"/>
+  <text x="600" y="772" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="1">Sunday Celebration Worship &amp; Faith Altar · Tongping, Juba</text>
+</svg>

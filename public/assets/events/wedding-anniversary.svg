@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="anniSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="50%" stop-color="#312e81"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <radialGradient id="goldJubileeGlow" cx="50%" cy="35%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#f59e0b" stop-opacity="0.5"/>
+      <stop offset="85%" stop-color="#1e1b4b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#anniSky)"/>
+  <circle cx="600" cy="320" r="380" fill="url(#goldJubileeGlow)"/>
+
+  <!-- Golden Jubilee Ribbon Laurels -->
+  <g transform="translate(600, 200)">
+    <circle cx="0" cy="0" r="100" fill="none" stroke="#facc15" stroke-width="4" stroke-dasharray="8,6"/>
+    <circle cx="0" cy="0" r="85" fill="#fef08a" opacity="0.2"/>
+    <text x="0" y="8" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="44" font-weight="900" fill="#fef08a" text-anchor="middle">25</text>
+    <text x="0" y="32" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="14" font-weight="800" fill="#fef9c3" text-anchor="middle" letter-spacing="3">YEARS</text>
+  </g>
+
+  <!-- Happy Loving Couple in Elegant Matching Gold & Navy Celebration Attire -->
+  <g transform="translate(600, 520)">
+    <!-- Husband (Left) -->
+    <g transform="translate(-80, 0)">
+      <ellipse cx="0" cy="-110" rx="22" ry="26" fill="#78350f"/>
+      <!-- Navy suit with gold trim -->
+      <path d="M -45,-80 L 45,-80 L 50,180 L -50,180 Z" fill="#0f172a" stroke="#ca8a04" stroke-width="2"/>
+      <polygon points="-15,-80 15,-80 0,-25" fill="#fef08a"/>
+      <!-- Gold pocket square -->
+      <line x1="-30" y1="-50" x2="-15" y2="-50" stroke="#facc15" stroke-width="4"/>
+    </g>
+
+    <!-- Wife (Right) in Radiant Gold Gown & Gele/Headwrap -->
+    <g transform="translate(80, 0)">
+      <!-- Golden Gele -->
+      <path d="M -35,-125 Q 0,-155 35,-125 Q 45,-145 0,-160 Q -45,-145 -35,-125 Z" fill="#eab308" stroke="#fef08a" stroke-width="2"/>
+      <ellipse cx="0" cy="-110" rx="20" ry="24" fill="#78350f"/>
+      <!-- Elegant Jubilee Gown with embroidery -->
+      <path d="M -35,-80 L 35,-80 L 80,180 L -80,180 Z" fill="#d97706" stroke="#fef08a" stroke-width="2"/>
+      <!-- Sparkling Gold Necklace -->
+      <path d="M -15,-70 Q 0,-50 15,-70" fill="none" stroke="#fef08a" stroke-width="3"/>
+    </g>
+
+    <!-- Couple Holding Hands in Center -->
+    <circle cx="0" cy="-20" r="14" fill="#78350f"/>
+    <!-- Heart Symbol floating above hands -->
+    <path d="M 0,-55 C -15,-75 -35,-55 -35,-40 C -35,-20 0,5 0,5 C 0,5 35,-20 35,-40 C 35,-55 15,-75 0,-55 Z" fill="#f43f5e"/>
+  </g>
+
+  <!-- Heading -->
+  <text x="600" y="80" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="28" font-weight="900" fill="#fef08a" text-anchor="middle" letter-spacing="3">WEDDING ANNIVERSARY CELEBRATIONS</text>
+  <text x="600" y="118" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="700" fill="#c7d2fe" text-anchor="middle" letter-spacing="2">Honoring God's Faithfulness &amp; Covenant Marriages in Juba</text>
+
+  <!-- Bottom Details -->
+  <rect x="0" y="740" width="1200" height="60" fill="#0f172a" opacity="0.95"/>
+  <text x="600" y="777" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Renewing Covenant Vows · Celebrating 5, 10, 20 &amp; 25+ Years of Marital Grace</text>
+</svg>

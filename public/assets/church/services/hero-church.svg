@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="heroSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#022c22"/>
+      <stop offset="40%" stop-color="#064e3b"/>
+      <stop offset="80%" stop-color="#065f46"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <radialGradient id="sunBurst" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.85"/>
+      <stop offset="35%" stop-color="#f59e0b" stop-opacity="0.4"/>
+      <stop offset="70%" stop-color="#10b981" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#022c22" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#heroSky)"/>
+  <circle cx="600" cy="300" r="450" fill="url(#sunBurst)"/>
+
+  <!-- Church Sanctuary Facade in Juba -->
+  <g transform="translate(600, 480)">
+    <!-- Base and Columns -->
+    <path d="M -450,220 L -450,-60 L 0,-240 L 450,-60 L 450,220 Z" fill="#042f2e" stroke="#059669" stroke-width="4"/>
+    <polygon points="0,-270 -470,-70 470,-70" fill="#064e3b" stroke="#34d399" stroke-width="3"/>
+    
+    <!-- Central Cross atop Sanctuary -->
+    <rect x="-8" y="-350" width="16" height="110" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+    <rect x="-35" y="-320" width="70" height="16" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+
+    <!-- Sanctuary Arched Windows & Doors -->
+    <path d="M -300,100 L -300,-10 Q -240,-60 -180,-10 L -180,100 Z" fill="#021c1a" stroke="#10b981" stroke-width="3"/>
+    <path d="M 180,100 L 180,-10 Q 240,-60 300,-10 L 300,100 Z" fill="#021c1a" stroke="#10b981" stroke-width="3"/>
+    <!-- Grand Portal Entrance -->
+    <path d="M -90,220 L -90,40 Q 0,-20 90,40 L 90,220 Z" fill="#021c1a" stroke="#fbbf24" stroke-width="4"/>
+    
+    <!-- Altar Cross silhouette inside portal -->
+    <rect x="-4" y="60" width="8" height="60" fill="#fbbf24"/>
+    <rect x="-18" y="75" width="36" height="8" fill="#fbbf24"/>
+  </g>
+
+  <!-- Church Members & Leadership Assembling -->
+  <g fill="#021c1a" opacity="0.95">
+    <path d="M 480,750 Q 500,600 530,580 Q 520,540 540,540 Q 560,540 550,580 Q 580,600 600,750 Z"/>
+    <path d="M 600,750 Q 620,610 645,590 Q 635,550 655,550 Q 675,550 665,590 Q 690,610 710,750 Z"/>
+    <path d="M 360,770 Q 380,630 405,610 Q 395,570 415,570 Q 435,570 425,610 Q 450,630 470,770 Z"/>
+    <path d="M 720,770 Q 740,630 765,610 Q 755,570 775,570 Q 795,570 785,610 Q 810,630 830,770 Z"/>
+  </g>
+
+  <!-- Emblem Header Text -->
+  <text x="600" y="110" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="28" font-weight="900" fill="#fef08a" text-anchor="middle" letter-spacing="4">VICTORIOUS ROYAL ASSEMBLY INTERNATIONAL</text>
+  <text x="600" y="145" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="700" fill="#a7f3d0" text-anchor="middle" letter-spacing="3">MISSIONARY HEADQUARTERS &amp; PRIMARY SCHOOL · JUBA</text>
+</svg>
