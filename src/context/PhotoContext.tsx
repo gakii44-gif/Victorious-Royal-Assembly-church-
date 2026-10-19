@@ -15,11 +15,24 @@ import {
 export type GalleryCategory = 
   | 'victorious-heritage' 
   | 'church' 
+  | 'church-events' 
   | 'women' 
   | 'vocational' 
   | 'life-at-heritage'
   | 'heritage'; // backward compatibility alias for victorious-heritage
 export type MediaType = 'photo' | 'video';
+
+export interface FocalPoint {
+  x: number; // 0% to 100% horizontal focal center
+  y: number; // 0% to 100% vertical focal center
+}
+
+export interface ChurchEventDetails {
+  eventType: 'wedding' | 'anniversary' | 'thanksgiving' | 'dedication' | 'milestone';
+  celebrants?: string; // e.g. "Mr. & Mrs. Deng", "Pastor & First Lady"
+  eventDate?: string;
+  anniversaryYears?: string | number; // e.g. "10th Wedding Anniversary"
+}
 
 export interface GalleryPhotoItem {
   id: string;
@@ -33,6 +46,9 @@ export interface GalleryPhotoItem {
   videoUrl?: string; // Runtime playback URL for videos
   duration?: string; // E.g. "0:45", "1:15"
   fileSize?: string;
+  focalPoint?: FocalPoint; // Draggable focal position to center faces
+  zoom?: number; // Framing scale zoom multiplier (1.0 to 2.5)
+  eventDetails?: ChurchEventDetails;
 }
 
 export interface PhotoData {
@@ -41,6 +57,18 @@ export interface PhotoData {
   uploadedAt: string;
   mediaType?: MediaType;
   videoUrl?: string;
+  focalPoint?: FocalPoint;
+  zoom?: number;
+}
+
+export interface FocalAdjustTarget {
+  type: 'slot' | 'gallery';
+  keyOrId: string;
+  url: string;
+  title: string;
+  focalPoint?: FocalPoint;
+  zoom?: number;
+  aspectRatio?: '16:9' | '4:3' | '1:1' | '3:2' | '21:9';
 }
 
 interface PhotoContextType {
@@ -49,6 +77,7 @@ interface PhotoContextType {
   uploadPhoto: (slotKey: string, file: File, alt?: string) => Promise<string>;
   removePhoto: (slotKey: string) => void;
   getPhoto: (slotKey: string) => PhotoData | null;
+  updatePhotoFocalPoint: (slotKey: string, focalPoint: FocalPoint, zoom?: number) => void;
   activeUploadSlot: string | null;
   openUploadModal: (slotKey: string, label?: string) => void;
   closeUploadModal: () => void;
@@ -68,6 +97,7 @@ interface PhotoContextType {
   ) => Promise<GalleryPhotoItem[]>;
   removeGalleryPhoto: (id: string) => void;
   updateGalleryPhoto: (id: string, updates: Partial<GalleryPhotoItem>) => void;
+  updateGalleryPhotoFocalPoint: (id: string, focalPoint: FocalPoint, zoom?: number) => void;
   replaceGalleryMedia: (
     id: string,
     file: File,
@@ -80,6 +110,17 @@ interface PhotoContextType {
   openMultiUploadModal: (defaultCategory?: GalleryCategory) => void;
   closeMultiUploadModal: () => void;
   multiUploadDefaultCategory: GalleryCategory;
+
+  // Dedicated Church Event (Weddings & Anniversaries) Upload Modal
+  isChurchEventUploadOpen: boolean;
+  openChurchEventUploadModal: (eventType?: 'wedding' | 'anniversary' | 'church-anniversary' | 'thanksgiving' | 'dedication') => void;
+  closeChurchEventUploadModal: () => void;
+  churchEventDefaultType: 'wedding' | 'anniversary' | 'church-anniversary' | 'thanksgiving' | 'dedication';
+
+  // Interactive Photo Framing & Face Repositioning Modal
+  focalAdjustTarget: FocalAdjustTarget | null;
+  openFocalAdjustModal: (target: FocalAdjustTarget) => void;
+  closeFocalAdjustModal: () => void;
 
   // Storage hydration state
   isStorageReady: boolean;
@@ -105,52 +146,233 @@ const STORAGE_KEY_SCHOOL_LOGO = 'vrai_school_custom_logo_key';
 const DEFAULT_CHURCH_LOGO_URL = '/vrai-church-logo.svg';
 const DEFAULT_SCHOOL_LOGO_URL = '/victorious-heritage-school-logo.svg';
 
-// Default initial curated gallery placeholders
+// Default slot fallbacks committed directly into the repository
+export const DEFAULT_SLOT_FALLBACKS: Record<string, PhotoData> = {
+  'hero_church': {
+    url: '/assets/church/services/hero-church.svg',
+    alt: 'Victorious Royal Assembly International Sanctuary & Altar',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.0,
+  },
+  'about_worship': {
+    url: '/assets/church/services/sunday-worship.svg',
+    alt: 'Sunday Celebration Worship Altar',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 40 },
+    zoom: 1.0,
+  },
+  'school_assembly': {
+    url: '/assets/schools/heritage-academy/morning-assembly.svg',
+    alt: 'Victorious Heritage Primary School Morning Assembly',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
+  },
+  'school_classroom': {
+    url: '/assets/schools/heritage-academy/classroom-reading.svg',
+    alt: 'Classroom Literacy & Numeracy Instruction',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
+  },
+  'school_nutrition': {
+    url: '/assets/schools/heritage-academy/school-nutrition.svg',
+    alt: 'Pupil Nutrition & Midday Porridge Meal Program',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 45 },
+    zoom: 1.0,
+  },
+  'school_expansion': {
+    url: '/assets/schools/heritage-academy/classroom-expansion.svg',
+    alt: 'Classroom Desks & Facility Upgrades',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
+  },
+  'women_fellowship': {
+    url: '/assets/church/fellowships/women-fellowship.svg',
+    alt: 'Women Fellowship & Mothers Union',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.05,
+  },
+  'vocational_tailoring': {
+    url: '/assets/vocational/tailoring.svg',
+    alt: 'Tailoring & Garment Design Training',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 45 },
+    zoom: 1.0,
+  },
+  'vocational_carpentry': {
+    url: '/assets/vocational/carpentry.svg',
+    alt: 'Carpentry & Joinery Workshop',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
+  },
+  'vocational_solar': {
+    url: '/assets/vocational/solar-electrical.svg',
+    alt: 'Solar PV & Electrical Systems Training',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
+  },
+  'event_wedding': {
+    url: '/assets/events/church-wedding.svg',
+    alt: 'Holy Matrimony & Nuptials',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 30 },
+    zoom: 1.1,
+  },
+  'event_anniversary': {
+    url: '/assets/events/wedding-anniversary.svg',
+    alt: 'Wedding Anniversary Celebration',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 30 },
+    zoom: 1.1,
+  },
+  'event_church_anniversary': {
+    url: '/assets/events/church-anniversary.svg',
+    alt: 'Church Annual Convention & Jubilee',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 40 },
+    zoom: 1.0,
+  },
+  'event_thanksgiving': {
+    url: '/assets/events/thanksgiving-dedication.svg',
+    alt: 'Thanksgiving & Child Dedication',
+    uploadedAt: '2026-10-01T00:00:00.000Z',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.0,
+  },
+};
+
+// Default initial curated gallery archives (all pointing to real bundled repo assets)
 const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
-  // 1. Victorious Heritage (Nursery & Primary School & Adult Education)
+  // 1. Church Events & Celebrations (Weddings, Anniversaries, Milestones)
+  {
+    id: 'event-wedding-covenant',
+    url: '/assets/events/church-wedding.svg',
+    title: 'Holy Matrimony & Covenant Wedding Ceremony',
+    category: 'church-events',
+    caption: 'Joyful wedding nuptials celebrated at the Victorious Royal Assembly altar in Juba. What God has joined together, let not man put asunder.',
+    uploadedAt: '2026-10-01T10:00:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+    focalPoint: { x: 50, y: 30 },
+    zoom: 1.1,
+    eventDetails: {
+      eventType: 'wedding',
+      celebrants: 'Church Members Holy Matrimony',
+      eventDate: '2026-09-18',
+    }
+  },
+  {
+    id: 'event-wedding-anniversary',
+    url: '/assets/events/wedding-anniversary.svg',
+    title: 'Silver & Golden Wedding Anniversary Blessings',
+    category: 'church-events',
+    caption: 'Couples renewing covenant vows and celebrating enduring marriage grace at the Word of Faith healing altar.',
+    uploadedAt: '2026-10-02T11:00:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+    focalPoint: { x: 50, y: 30 },
+    zoom: 1.1,
+    eventDetails: {
+      eventType: 'anniversary',
+      celebrants: 'Covenant Marriage Couples',
+      anniversaryYears: '25th Silver Jubilee',
+      eventDate: '2026-08-22',
+    }
+  },
+  {
+    id: 'event-church-jubilee',
+    url: '/assets/events/church-anniversary.svg',
+    title: 'Church Annual Convention & Jubilee Thanksgiving',
+    category: 'church-events',
+    caption: 'Victorious Royal Assembly International annual thanksgiving convention, celebrating ministry expansion, healing testimonies, and spiritual fruitfulness in South Sudan.',
+    uploadedAt: '2026-10-03T09:00:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+    focalPoint: { x: 50, y: 40 },
+    zoom: 1.0,
+    eventDetails: {
+      eventType: 'milestone',
+      celebrants: 'Victorious Royal Assembly Assembly',
+      eventDate: '2026-07-15',
+    }
+  },
+  {
+    id: 'event-child-dedication',
+    url: '/assets/events/thanksgiving-dedication.svg',
+    title: 'Altar Thanksgiving & Child Dedications',
+    category: 'church-events',
+    caption: 'Pastoral altar blessing and child dedication services presenting newborns unto the Lord in thanksgiving.',
+    uploadedAt: '2026-10-04T11:30:00.000Z',
+    isUserUploaded: false,
+    mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.0,
+    eventDetails: {
+      eventType: 'dedication',
+      celebrants: 'Dedicated Children & Families',
+      eventDate: '2026-09-05',
+    }
+  },
+
+  // 2. Victorious Heritage (Nursery & Primary School & Adult Education)
   {
     id: 'heritage-assembly',
-    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    url: '/assets/schools/heritage-academy/morning-assembly.svg',
     title: 'Victorious Heritage Morning Assembly & Prayer',
     category: 'victorious-heritage',
     caption: 'Primary school pupils and teachers gathering for morning devotions, scripture reading, and South Sudan national anthem.',
     uploadedAt: '2026-10-01T08:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
   },
   {
     id: 'heritage-classroom',
-    url: '/assets/schools/heritage-academy/classroom-reading.jpg',
+    url: '/assets/schools/heritage-academy/classroom-reading.svg',
     title: 'Classroom Literacy & Science Lesson',
     category: 'victorious-heritage',
     caption: 'Pupils engaged in English, mathematics, and South Sudan national curriculum studies.',
     uploadedAt: '2026-10-02T09:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 45 },
+    zoom: 1.0,
   },
   {
     id: 'heritage-nutrition',
-    url: '/assets/schools/heritage-academy/school-nutrition.jpg',
+    url: '/assets/schools/heritage-academy/school-nutrition.svg',
     title: 'Pupil Nutrition & Midday Meal Program',
     category: 'victorious-heritage',
     caption: 'Daily nutritious morning porridge and meals served to support active learning and pupil health.',
     uploadedAt: '2026-10-03T12:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 45 },
+    zoom: 1.0,
   },
   {
     id: 'heritage-expansion',
-    url: '/assets/schools/heritage-academy/classroom-expansion.jpg',
+    url: '/assets/schools/heritage-academy/classroom-expansion.svg',
     title: 'Classroom Desks & Facility Upgrades',
     category: 'victorious-heritage',
     caption: 'Wooden dual writing desks built by local craftsmen to ensure no child sits on the floor.',
     uploadedAt: '2026-10-04T14:15:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
   },
   {
     id: 'heritage-video-sample',
-    url: '/assets/schools/heritage-academy/classroom-reading.jpg',
+    url: '/assets/schools/heritage-academy/classroom-reading.svg',
     title: 'Pupils Singing & Worship at Morning Devotion',
     category: 'victorious-heritage',
     caption: 'Video highlight of pupils praising and singing hymns before morning classes in Juba.',
@@ -158,42 +380,49 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     isUserUploaded: false,
     mediaType: 'video',
     duration: '1:24',
+    focalPoint: { x: 50, y: 45 },
   },
 
-  // 2. Church Photos & Videos
+  // 3. Church Photos & Videos
   {
     id: 'church-worship',
-    url: '/assets/church/services/sunday-worship.jpg',
+    url: '/assets/church/services/sunday-worship.svg',
     title: 'Sunday Worship & Word of Faith Altar',
     category: 'church',
     caption: 'Victorious Royal Assembly congregation gathered for Sunday morning praise, healing, and anointed preaching.',
     uploadedAt: '2026-10-05T10:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 40 },
+    zoom: 1.0,
   },
   {
     id: 'church-healing',
-    url: '/assets/church/services/hero-church.jpg',
+    url: '/assets/church/services/hero-church.svg',
     title: 'Healing & Deliverance Altar Ministry',
     category: 'church',
     caption: 'A.k.a Word of Faith Healing & Deliverance Ministry Int’l — Altar intercession and divine restoration in Juba.',
     uploadedAt: '2026-10-06T11:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.0,
   },
   {
     id: 'church-communion',
-    url: '/assets/church/services/sunday-worship.jpg',
+    url: '/assets/church/services/sunday-worship.svg',
     title: 'Holy Communion & Covenant Service',
     category: 'church',
     caption: 'Breaking bread and receiving covenant blessings at the altar on former Nilepet Road, Tongping.',
     uploadedAt: '2026-10-07T11:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 40 },
+    zoom: 1.0,
   },
   {
     id: 'church-video-sample',
-    url: '/assets/church/services/hero-church.jpg',
+    url: '/assets/church/services/hero-church.svg',
     title: 'Anointed Worship & Choir Praise Video',
     category: 'church',
     caption: 'Video clip of the choir leading the assembly in uplifting African gospel worship.',
@@ -201,42 +430,49 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     isUserUploaded: false,
     mediaType: 'video',
     duration: '1:45',
+    focalPoint: { x: 50, y: 35 },
   },
 
-  // 3. Women Section Photos & Videos
+  // 4. Women Section Photos & Videos
   {
     id: 'women-anniversary',
-    url: '/assets/church/fellowships/women-fellowship.jpg',
+    url: '/assets/church/fellowships/women-fellowship.svg',
     title: 'Women Fellowship Annual Anniversary',
     category: 'women',
     caption: 'Sisters dressed in matching African print commemorative fabrics celebrating grace and unity.',
     uploadedAt: '2026-10-09T14:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.05,
   },
   {
     id: 'women-prayer',
-    url: '/assets/church/fellowships/women-fellowship.jpg',
+    url: '/assets/church/fellowships/women-fellowship.svg',
     title: 'Mothers Intercessory Vigil & Prayer Altar',
     category: 'women',
     caption: 'Faithful women interceding for families, children, church growth, and peace in South Sudan.',
     uploadedAt: '2026-10-10T16:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.05,
   },
   {
     id: 'women-widows',
-    url: '/assets/church/fellowships/women-fellowship.jpg',
+    url: '/assets/church/fellowships/women-fellowship.svg',
     title: 'Widow Support & Food Basket Distribution',
     category: 'women',
     caption: 'Empowering vulnerable women and widows with essential food grain, cooking oil, and fellowship support.',
     uploadedAt: '2026-10-11T15:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.05,
   },
   {
     id: 'women-video-sample',
-    url: '/assets/church/fellowships/women-fellowship.jpg',
+    url: '/assets/church/fellowships/women-fellowship.svg',
     title: 'Women Fellowship Dance & Thanksgiving Song',
     category: 'women',
     caption: 'Joyful video clip of the women praising the Lord with traditional South Sudanese rhythms.',
@@ -244,42 +480,49 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     isUserUploaded: false,
     mediaType: 'video',
     duration: '1:10',
+    focalPoint: { x: 50, y: 35 },
   },
 
-  // 4. Vocational Photos & Videos
+  // 5. Vocational Photos & Videos
   {
     id: 'vocational-tailoring',
-    url: '/assets/schools/vocational-school/tailoring-class.jpg',
+    url: '/assets/vocational/tailoring.svg',
     title: 'Tailoring & Garment Design Training',
     category: 'vocational',
     caption: 'Trainees learning precision machine sewing, pattern drafting, and apparel making.',
     uploadedAt: '2026-10-13T10:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 45 },
+    zoom: 1.0,
   },
   {
     id: 'vocational-carpentry',
-    url: '/assets/schools/vocational-school/carpentry-workshop.jpg',
+    url: '/assets/vocational/carpentry.svg',
     title: 'Carpentry & Furniture Joinery Workshop',
     category: 'vocational',
     caption: 'Youth crafting study desks, classroom benches, doors, and timber furniture.',
     uploadedAt: '2026-10-14T11:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
   },
   {
     id: 'vocational-solar',
-    url: '/assets/schools/vocational-school/solar-electrical.jpg',
+    url: '/assets/vocational/solar-electrical.svg',
     title: 'Solar Photovoltaic Technician Training',
     category: 'vocational',
     caption: 'Students assembling solar storage systems, charge controllers, and off-grid lighting.',
     uploadedAt: '2026-10-15T14:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
   },
   {
     id: 'vocational-video-sample',
-    url: '/assets/schools/vocational-school/tailoring-class.jpg',
+    url: '/assets/vocational/tailoring.svg',
     title: 'Tailoring Workshop In Action Video',
     category: 'vocational',
     caption: 'Video walkthrough of apprentice trainees operating treadle sewing machines.',
@@ -287,52 +530,61 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     isUserUploaded: false,
     mediaType: 'video',
     duration: '0:58',
+    focalPoint: { x: 50, y: 45 },
   },
 
-  // 5. Life at Victorious Heritage (Joy, Recess, Playground & Celebrations)
+  // 6. Life at Victorious Heritage (Joy, Recess, Playground & Celebrations)
   {
     id: 'life-graduate',
-    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    url: '/assets/schools/heritage-academy/morning-assembly.svg',
     title: 'Young Pupil Nursery Graduate in Emerald & Gold Gown',
     category: 'life-at-heritage',
     caption: 'Celebrating early childhood milestone completion with diploma scroll and radiant joy.',
     uploadedAt: '2026-10-16T11:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.15,
   },
   {
     id: 'life-swings',
-    url: '/assets/schools/heritage-academy/classroom-expansion.jpg',
+    url: '/assets/schools/heritage-academy/classroom-expansion.svg',
     title: 'Playground Swings & Laughter During Morning Recess',
     category: 'life-at-heritage',
     caption: 'Children sharing moments of play, friendship, and everyday happiness on the school swings.',
     uploadedAt: '2026-10-16T11:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
   },
   {
     id: 'life-dining',
-    url: '/assets/schools/heritage-academy/school-nutrition.jpg',
+    url: '/assets/schools/heritage-academy/school-nutrition.svg',
     title: 'Fellowship Dining & Warm Meals Under Canopies',
     category: 'life-at-heritage',
     caption: 'Pupils gathered together enjoying warm midday porridge and nutritious lunches.',
     uploadedAt: '2026-10-16T12:00:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 45 },
+    zoom: 1.0,
   },
   {
     id: 'life-slide',
-    url: '/assets/schools/heritage-academy/classroom-reading.jpg',
+    url: '/assets/schools/heritage-academy/classroom-reading.svg',
     title: 'Playground Recreation & Childhood Activities',
     category: 'life-at-heritage',
     caption: 'Pupils enjoying outdoor play equipment and slides in the secure school courtyard.',
     uploadedAt: '2026-10-16T12:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 50 },
+    zoom: 1.0,
   },
   {
     id: 'life-video-recess',
-    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    url: '/assets/schools/heritage-academy/morning-assembly.svg',
     title: 'Playground Games & Children Joyful Recess Video',
     category: 'life-at-heritage',
     caption: 'Video highlight capturing children running, laughing, and playing together during break time.',
@@ -340,16 +592,19 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
     isUserUploaded: false,
     mediaType: 'video',
     duration: '0:48',
+    focalPoint: { x: 50, y: 50 },
   },
   {
     id: 'life-teachers',
-    url: '/assets/schools/heritage-academy/morning-assembly.jpg',
+    url: '/assets/schools/heritage-academy/morning-assembly.svg',
     title: 'Dedicated Teachers in Yellow Victorious Heritage Shirts',
     category: 'life-at-heritage',
     caption: 'Loving educators and mentors smiling proudly in Victorious Heritage yellow team shirts.',
     uploadedAt: '2026-10-16T13:30:00.000Z',
     isUserUploaded: false,
     mediaType: 'photo',
+    focalPoint: { x: 50, y: 35 },
+    zoom: 1.1,
   },
 ];
 
@@ -709,7 +964,49 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const getPhoto = (slotKey: string): PhotoData | null => {
-    return photos[slotKey] || null;
+    // 1. If user uploaded a custom photo, return it
+    if (photos[slotKey] && photos[slotKey].url && photos[slotKey].url.trim() !== '') {
+      return photos[slotKey];
+    }
+    // 2. Exact match in bundled repository assets
+    if (DEFAULT_SLOT_FALLBACKS[slotKey]) {
+      return DEFAULT_SLOT_FALLBACKS[slotKey];
+    }
+    // 3. Smart semantic fallback matching slot names
+    const lower = slotKey.toLowerCase();
+    if (lower.includes('wedding')) return DEFAULT_SLOT_FALLBACKS['event_wedding'];
+    if (lower.includes('anniversary')) return DEFAULT_SLOT_FALLBACKS['event_anniversary'];
+    if (lower.includes('women')) return DEFAULT_SLOT_FALLBACKS['women_fellowship'];
+    if (lower.includes('school') || lower.includes('heritage') || lower.includes('pupil') || lower.includes('child')) {
+      if (lower.includes('nutrition') || lower.includes('meal')) return DEFAULT_SLOT_FALLBACKS['school_nutrition'];
+      if (lower.includes('desk') || lower.includes('expansion')) return DEFAULT_SLOT_FALLBACKS['school_expansion'];
+      if (lower.includes('class')) return DEFAULT_SLOT_FALLBACKS['school_classroom'];
+      return DEFAULT_SLOT_FALLBACKS['school_assembly'];
+    }
+    if (lower.includes('vocational') || lower.includes('trade')) {
+      if (lower.includes('carpentry')) return DEFAULT_SLOT_FALLBACKS['vocational_carpentry'];
+      if (lower.includes('solar')) return DEFAULT_SLOT_FALLBACKS['vocational_solar'];
+      return DEFAULT_SLOT_FALLBACKS['vocational_tailoring'];
+    }
+    return DEFAULT_SLOT_FALLBACKS['hero_church'] || null;
+  };
+
+  const updatePhotoFocalPoint = (slotKey: string, focalPoint: FocalPoint, zoom: number = 1.0) => {
+    setPhotos((prev) => {
+      const existing = prev[slotKey] || getPhoto(slotKey) || {
+        url: '/assets/church/services/hero-church.svg',
+        alt: slotKey,
+        uploadedAt: new Date().toISOString(),
+      };
+      const updatedItem: PhotoData = {
+        ...existing,
+        focalPoint,
+        zoom,
+      };
+      const updated = { ...prev, [slotKey]: updatedItem };
+      saveSlotPhotosToIDB(updated);
+      return updated;
+    });
   };
 
   const openUploadModal = (slotKey: string, label?: string) => {
@@ -897,6 +1194,42 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsMultiUploadOpen(false);
   };
 
+  const updateGalleryPhotoFocalPoint = (id: string, focalPoint: FocalPoint, zoom: number = 1.0) => {
+    setGalleryPhotos((prev) => {
+      const updated = prev.map((p) => (p.id === id ? { ...p, focalPoint, zoom } : p));
+      saveGalleryItemsToIDB(updated);
+      return updated;
+    });
+  };
+
+  // Dedicated Church Event (Weddings & Anniversaries) Upload Modal
+  const [isChurchEventUploadOpen, setIsChurchEventUploadOpen] = useState(false);
+  const [churchEventDefaultType, setChurchEventDefaultType] = useState<
+    'wedding' | 'anniversary' | 'church-anniversary' | 'thanksgiving' | 'dedication'
+  >('wedding');
+
+  const openChurchEventUploadModal = (
+    eventType: 'wedding' | 'anniversary' | 'church-anniversary' | 'thanksgiving' | 'dedication' = 'wedding'
+  ) => {
+    setChurchEventDefaultType(eventType);
+    setIsChurchEventUploadOpen(true);
+  };
+
+  const closeChurchEventUploadModal = () => {
+    setIsChurchEventUploadOpen(false);
+  };
+
+  // Interactive Photo Framing & Face Repositioning Modal State
+  const [focalAdjustTarget, setFocalAdjustTarget] = useState<FocalAdjustTarget | null>(null);
+
+  const openFocalAdjustModal = (target: FocalAdjustTarget) => {
+    setFocalAdjustTarget(target);
+  };
+
+  const closeFocalAdjustModal = () => {
+    setFocalAdjustTarget(null);
+  };
+
   const uploadChurchLogo = async (file: File): Promise<string> => {
     await saveMediaFile('media_church_logo', file);
     const url = createTrackedUrl(file);
@@ -944,6 +1277,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         uploadPhoto,
         removePhoto,
         getPhoto,
+        updatePhotoFocalPoint,
         activeUploadSlot,
         openUploadModal,
         closeUploadModal,
@@ -953,12 +1287,20 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         uploadMultipleGalleryPhotos,
         removeGalleryPhoto,
         updateGalleryPhoto,
+        updateGalleryPhotoFocalPoint,
         replaceGalleryMedia,
         resetDefaultGalleryPhotos,
         isMultiUploadOpen,
         openMultiUploadModal,
         closeMultiUploadModal,
         multiUploadDefaultCategory,
+        isChurchEventUploadOpen,
+        openChurchEventUploadModal,
+        closeChurchEventUploadModal,
+        churchEventDefaultType,
+        focalAdjustTarget,
+        openFocalAdjustModal,
+        closeFocalAdjustModal,
         isStorageReady,
         churchLogoUrl,
         schoolLogoUrl,

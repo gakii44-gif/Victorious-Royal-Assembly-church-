@@ -17,7 +17,8 @@ import {
   Film,
   Trash2,
   RefreshCw,
-  Play
+  Play,
+  Move
 } from 'lucide-react';
 import { VRAILogo } from './VRAILogo';
 import { GalleryPhotoItem } from '../context/PhotoContext';
@@ -46,7 +47,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
   onOpenDonateModal,
   className = '',
 }) => {
-  const { getPhoto, openUploadModal, openMultiUploadModal, removePhoto, galleryPhotos, removeGalleryPhoto } = usePhotos();
+  const { getPhoto, openUploadModal, openMultiUploadModal, removePhoto, galleryPhotos, removeGalleryPhoto, openFocalAdjustModal } = usePhotos();
   const [lightboxItem, setLightboxItem] = useState<{ key: string; url?: string; title: string; subtitle: string; badge: string; isVideo?: boolean; videoUrl?: string } | null>(null);
   const [replaceMediaItem, setReplaceMediaItem] = useState<GalleryPhotoItem | null>(null);
 
@@ -140,6 +141,11 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
             src={photo.url}
             alt={photo.alt || item.alt}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+            style={{
+              objectPosition: `${photo.focalPoint?.x ?? 50}% ${photo.focalPoint?.y ?? 50}%`,
+              transform: photo.zoom && photo.zoom !== 1 ? `scale(${photo.zoom})` : undefined,
+              transformOrigin: `${photo.focalPoint?.x ?? 50}% ${photo.focalPoint?.y ?? 50}%`,
+            }}
             onClick={() =>
               setLightboxItem({
                 key: item.key,
@@ -216,10 +222,31 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
           </div>
         )}
 
-        {/* Hover Action Overlay: Upload Real Photo, Replace, Delete & Zoom */}
-        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3 z-20 backdrop-blur-2xs">
+        {/* Hover Action Overlay: Fit Box, Upload Real Photo, Replace, Delete & Zoom */}
+        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-3 z-20 backdrop-blur-2xs">
           {photo ? (
             <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFocalAdjustModal({
+                    type: 'slot',
+                    keyOrId: item.key,
+                    url: photo.url,
+                    title: item.title,
+                    focalPoint: photo.focalPoint || { x: 50, y: 50 },
+                    zoom: photo.zoom || 1.0,
+                    aspectRatio: '4:3',
+                  });
+                }}
+                className="px-2.5 py-1.5 bg-amber-400 text-stone-950 rounded-lg text-xs font-bold shadow-md hover:bg-amber-300 transition-colors flex items-center gap-1"
+                title="Adjust photo framing and center face"
+              >
+                <Move className="w-3.5 h-3.5 text-stone-950" />
+                <span>Fit Box</span>
+              </button>
+
               <button
                 type="button"
                 onClick={(e) => {

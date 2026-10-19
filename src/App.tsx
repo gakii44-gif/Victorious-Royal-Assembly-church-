@@ -7,6 +7,9 @@ import { PhotoUploadModal } from './components/PhotoUploadModal';
 import { MultiPhotoUploadModal } from './components/MultiPhotoUploadModal';
 import { FloatingHelpChildButton } from './components/FloatingHelpChildButton';
 import { LogoPreviewModal } from './components/LogoPreviewModal';
+import { PhotoFocalAdjustModal } from './components/PhotoFocalAdjustModal';
+import { ChurchEventUploadModal } from './components/ChurchEventUploadModal';
+import { usePhotos } from './context/PhotoContext';
 
 // Views
 import HomeView from './views/HomeView';
@@ -25,6 +28,16 @@ import { GalleryView } from './views/GalleryView';
 import ContactView from './views/ContactView';
 
 export function App() {
+  const {
+    focalAdjustTarget,
+    closeFocalAdjustModal,
+    updatePhotoFocalPoint,
+    updateGalleryPhotoFocalPoint,
+    isChurchEventUploadOpen,
+    closeChurchEventUploadModal,
+    churchEventDefaultType,
+  } = usePhotos();
+
   const [currentView, setCurrentView] = useState<NavView>('home');
   const [isAssetGuideOpen, setIsAssetGuideOpen] = useState(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
@@ -268,6 +281,33 @@ export function App() {
 
       {/* Multi-Photo Gallery Upload Modal */}
       <MultiPhotoUploadModal />
+
+      {/* Interactive Photo Framing & Face Repositioning Modal */}
+      {focalAdjustTarget && (
+        <PhotoFocalAdjustModal
+          isOpen={!!focalAdjustTarget}
+          onClose={closeFocalAdjustModal}
+          imageUrl={focalAdjustTarget.url}
+          title={focalAdjustTarget.title}
+          initialFocalPoint={focalAdjustTarget.focalPoint}
+          initialZoom={focalAdjustTarget.zoom}
+          aspectRatio={focalAdjustTarget.aspectRatio || '4:3'}
+          onSave={(focalPoint, zoom) => {
+            if (focalAdjustTarget.type === 'slot') {
+              updatePhotoFocalPoint(focalAdjustTarget.keyOrId, focalPoint, zoom);
+            } else {
+              updateGalleryPhotoFocalPoint(focalAdjustTarget.keyOrId, focalPoint, zoom);
+            }
+          }}
+        />
+      )}
+
+      {/* Church Event (Weddings & Anniversaries) Upload Modal */}
+      <ChurchEventUploadModal
+        isOpen={isChurchEventUploadOpen}
+        onClose={closeChurchEventUploadModal}
+        defaultEventType={churchEventDefaultType}
+      />
 
       {/* Floating 'Help a Child Today' Button from Design Screenshots */}
       <FloatingHelpChildButton

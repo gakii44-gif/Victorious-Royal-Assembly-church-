@@ -27,8 +27,9 @@ import {
   Briefcase,
   GraduationCap,
   Heart,
-  Smile,
-  Film
+  Smile, 
+  Film,
+  Move
 } from 'lucide-react';
 import { usePhotos, GalleryCategory } from '../context/PhotoContext';
 import { EveryChildLearnsSection } from '../components/EveryChildLearnsSection';
@@ -51,7 +52,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenLogoPreview,
 }) => {
   const { hero, welcome, missionAndVision, ministries, school, schools, missionsAndOutreach, partnership, newsStories, callToAction, socialLinks } = organizationData;
-  const { getPhoto, openUploadModal, galleryPhotos, openMultiUploadModal } = usePhotos();
+  const { getPhoto, openUploadModal, galleryPhotos, openMultiUploadModal, openFocalAdjustModal } = usePhotos();
   const [homeGalleryTab, setHomeGalleryTab] = React.useState<'all' | GalleryCategory>('all');
   const heroPhoto = getPhoto(hero.photoSlotKey);
 
@@ -131,15 +132,42 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <img
                     src={heroPhoto.url}
                     alt={heroPhoto.alt || 'Victorious Royal Assembly International Hero Photograph'}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-all duration-300"
+                    style={{
+                      objectPosition: `${heroPhoto.focalPoint?.x ?? 50}% ${heroPhoto.focalPoint?.y ?? 50}%`,
+                      transform: heroPhoto.zoom && heroPhoto.zoom !== 1 ? `scale(${heroPhoto.zoom})` : undefined,
+                      transformOrigin: `${heroPhoto.focalPoint?.x ?? 50}% ${heroPhoto.focalPoint?.y ?? 50}%`,
+                    }}
                   />
-                  <button
-                    onClick={() => openUploadModal(hero.photoSlotKey, 'Hero Banner Photograph')}
-                    className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white text-xs font-semibold px-2.5 py-1 rounded backdrop-blur-xs flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-lime-400" />
-                    <span>Change Photo</span>
-                  </button>
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openFocalAdjustModal({
+                          type: 'slot',
+                          keyOrId: hero.photoSlotKey,
+                          url: heroPhoto.url,
+                          title: 'Homepage Hero Banner Photograph',
+                          focalPoint: heroPhoto.focalPoint || { x: 50, y: 50 },
+                          zoom: heroPhoto.zoom || 1.0,
+                          aspectRatio: '16:9',
+                        })
+                      }
+                      className="bg-black/75 hover:bg-black text-white text-xs font-semibold px-2.5 py-1 rounded backdrop-blur-xs flex items-center gap-1.5 shadow-md border border-white/20"
+                      title="Adjust photo framing & drag face to center in box"
+                    >
+                      <Move className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Fit Box</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openUploadModal(hero.photoSlotKey, 'Hero Banner Photograph')}
+                      className="bg-emerald-800/90 hover:bg-emerald-800 text-white text-xs font-semibold px-2.5 py-1 rounded backdrop-blur-xs flex items-center gap-1.5 shadow-md"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-lime-400" />
+                      <span>Change Photo</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 /* Elegant Green-and-White Design with Subtle Patterns & Church Logo */
@@ -835,6 +863,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </span>
                 </button>
                 <button
+                  onClick={() => setHomeGalleryTab('church-events')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    homeGalleryTab === 'church-events'
+                      ? 'bg-rose-700 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <HeartHandshake className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Church Events (Weddings &amp; Anniversaries)</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    ({galleryPhotos.filter(p => p.category === 'church-events').length})
+                  </span>
+                </button>
+                <button
                   onClick={() => setHomeGalleryTab('women')}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
                     homeGalleryTab === 'women'
@@ -881,11 +923,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {/* Gallery Preview Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {filteredHomeItems.map((item) => {
-                  const isUser = item.isUserUploaded;
                   const isVideo = item.mediaType === 'video';
+                  const focalX = item.focalPoint?.x ?? 50;
+                  const focalY = item.focalPoint?.y ?? 50;
+                  const zoom = item.zoom ?? 1.0;
                   const categoryLabel = 
                     (item.category === 'heritage' || item.category === 'victorious-heritage') ? 'Victorious Heritage' :
                     item.category === 'church' ? 'Church' :
+                    item.category === 'church-events' ? 'Church Events' :
                     item.category === 'women' ? 'Women' :
                     item.category === 'vocational' ? 'Vocational' : 'Life at Victorious Heritage';
 
@@ -895,18 +940,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       onClick={() => onNavigate('gallery')}
                       className="group bg-white rounded-xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
                     >
-                      <div className="relative aspect-4/3 overflow-hidden bg-stone-100">
-                        {isUser ? (
+                      <div className="relative aspect-4/3 overflow-hidden bg-stone-900">
+                        {item.url ? (
                           <div className="w-full h-full relative">
                             <img
                               src={item.url}
                               alt={item.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              style={{
+                                objectPosition: `${focalX}% ${focalY}%`,
+                                transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+                                transformOrigin: `${focalX}% ${focalY}%`,
+                              }}
                             />
                             {isVideo && (
-                              <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                                 <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
-                                  <Film className="w-5 h-5" />
+                                  <Film className="w-5 h-5 fill-current" />
                                 </div>
                               </div>
                             )}
@@ -932,6 +982,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-white backdrop-blur-xs">
                             {categoryLabel}
                           </span>
+                          {item.eventDetails && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-700 text-white">
+                              {item.eventDetails.eventType === 'wedding' ? '💍 Wedding' : '🥂 Anniversary'}
+                            </span>
+                          )}
                           {isVideo && (
                             <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-600 text-white">
                               Video

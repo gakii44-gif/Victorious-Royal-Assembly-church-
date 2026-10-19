@@ -30,7 +30,9 @@ import {
   BookOpen,
   Smile,
   SlidersHorizontal,
-  Maximize2
+  Maximize2,
+  HeartHandshake,
+  Move
 } from 'lucide-react';
 import { VRAILogo } from '../components/VRAILogo';
 import { LifeAtHeritageGallerySection } from '../components/LifeAtHeritageGallerySection';
@@ -52,11 +54,14 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
     openMultiUploadModal, 
     removeGalleryPhoto, 
     updateGalleryPhoto, 
-    resetDefaultGalleryPhotos 
+    resetDefaultGalleryPhotos,
+    openChurchEventUploadModal,
+    openFocalAdjustModal
   } = usePhotos();
 
-  // Active Section filter ('all' or one of the 5 specific sections)
+  // Active Section filter ('all' or one of the 6 specific sections)
   const [activeTab, setActiveTab] = useState<'all' | GalleryCategory>('all');
+  const [eventSubFilter, setEventSubFilter] = useState<'all' | 'wedding' | 'anniversary' | 'milestone' | 'thanksgiving'>('all');
   const [mediaFilter, setMediaFilter] = useState<'all' | 'photo' | 'video'>('all');
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState<GalleryPhotoItem | null>(null);
   const [replaceModalItem, setReplaceModalItem] = useState<GalleryPhotoItem | null>(null);
@@ -98,6 +103,17 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
       accentBg: 'bg-amber-50',
       accentText: 'text-amber-900',
       badgeBorder: 'border-amber-200'
+    },
+    { 
+      id: 'church-events', 
+      label: 'Church Events', 
+      shortLabel: 'Church Events',
+      icon: <HeartHandshake className="w-4 h-4 text-rose-600" />,
+      badge: 'Weddings & Anniversaries',
+      desc: 'Holy Matrimony covenant nuptials, silver & golden wedding anniversaries, annual church jubilee conventions, baby dedications, and altar thanksgiving in Juba.',
+      accentBg: 'bg-rose-50',
+      accentText: 'text-rose-900',
+      badgeBorder: 'border-rose-200'
     },
     { 
       id: 'women', 
@@ -145,6 +161,15 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
 
   const getSectionMeta = (cat: string) => {
     switch (cat) {
+      case 'church-events':
+        return {
+          id: 'church-events' as GalleryCategory,
+          label: 'Church Events',
+          shortLabel: 'Church Events',
+          badge: 'Weddings & Anniversaries',
+          bg: 'bg-rose-50 text-rose-800 border-rose-200',
+          dot: 'bg-rose-600',
+        };
       case 'victorious-heritage':
       case 'heritage':
         return {
@@ -210,7 +235,13 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
   // Filtered by selected section tab
   const sectionFilteredPhotos = activeTab === 'all'
     ? galleryPhotos
-    : galleryPhotos.filter((p) => isMatchCategory(p.category, activeTab));
+    : activeTab === 'church-events'
+      ? galleryPhotos.filter((p) => {
+          if (p.category !== 'church-events') return false;
+          if (eventSubFilter === 'all') return true;
+          return p.eventDetails?.eventType === eventSubFilter;
+        })
+      : galleryPhotos.filter((p) => isMatchCategory(p.category, activeTab));
 
   // Filtered by media format (All / Photos / Videos)
   const filteredPhotos = mediaFilter === 'all'
@@ -409,28 +440,85 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => openMultiUploadModal(activeSectionInfo.id)}
-                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5 text-lime-300" />
-                  <span>Upload to {activeSectionInfo.label}</span>
-                </button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                {activeSectionInfo.id === 'church-events' ? (
+                  <>
+                    <button
+                      onClick={() => openChurchEventUploadModal('wedding')}
+                      className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <HeartHandshake className="w-3.5 h-3.5 text-rose-200" />
+                      <span>Upload Wedding / Anniversary</span>
+                    </button>
+                    <button
+                      onClick={() => openMultiUploadModal('church-events')}
+                      className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-lime-300" />
+                      <span>Batch Upload</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => openMultiUploadModal(activeSectionInfo.id)}
+                    className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-lime-300" />
+                    <span>Upload to {activeSectionInfo.label}</span>
+                  </button>
+                )}
               </div>
             </div>
           ) : (
             <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p>
-                Viewing combined media across all 5 sections. Filter by tab above to focus on a specific ministry or school archive.
+                Viewing combined media across all 6 sections. Filter by tab above to focus on a specific ministry, school, or church events archive.
               </p>
-              <button
-                onClick={() => openMultiUploadModal('victorious-heritage')}
-                className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-bold text-xs shrink-0 inline-flex items-center gap-1.5"
-              >
-                <Upload className="w-3.5 h-3.5 text-lime-300" />
-                <span>Upload Media</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openChurchEventUploadModal('wedding')}
+                  className="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-bold text-xs shrink-0 inline-flex items-center gap-1.5"
+                >
+                  <HeartHandshake className="w-3.5 h-3.5" />
+                  <span>Upload Wedding/Anniversary</span>
+                </button>
+                <button
+                  onClick={() => openMultiUploadModal('victorious-heritage')}
+                  className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-bold text-xs shrink-0 inline-flex items-center gap-1.5"
+                >
+                  <Upload className="w-3.5 h-3.5 text-lime-300" />
+                  <span>Upload Media</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-Filters specifically for Church Events (Weddings, Anniversaries, Milestones) */}
+          {activeTab === 'church-events' && (
+            <div className="flex flex-wrap items-center gap-2 p-3 bg-rose-50/70 border border-rose-200/80 rounded-xl animate-in fade-in duration-200">
+              <span className="text-xs font-bold text-rose-950 flex items-center gap-1 mr-1">
+                <HeartHandshake className="w-3.5 h-3.5 text-rose-600" />
+                <span>Filter Celebrations:</span>
+              </span>
+              {[
+                { id: 'all', label: 'All Celebrations' },
+                { id: 'wedding', label: '💍 Weddings & Nuptials' },
+                { id: 'anniversary', label: '🥂 Wedding Anniversaries' },
+                { id: 'milestone', label: '⛪ Church Jubilee' },
+                { id: 'thanksgiving', label: '🙏 Dedications & Thanksgiving' },
+              ].map((sub) => (
+                <button
+                  key={sub.id}
+                  onClick={() => setEventSubFilter(sub.id as any)}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    eventSubFilter === sub.id
+                      ? 'bg-rose-700 text-white shadow-xs'
+                      : 'bg-white text-stone-700 hover:bg-rose-100/60 border border-stone-200'
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -471,6 +559,9 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
               const isUserItem = item.isUserUploaded;
               const isVideo = item.mediaType === 'video';
               const isInlinePlaying = inlineVideoPlayingId === item.id;
+              const focalX = item.focalPoint?.x ?? 50;
+              const focalY = item.focalPoint?.y ?? 50;
+              const zoom = item.zoom ?? 1.0;
 
               return (
                 <div
@@ -503,8 +594,8 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                    ) : isUserItem ? (
-                      /* USER UPLOADED MEDIA */
+                    ) : (
+                      /* PHOTO / VIDEO POSTER DISPLAY WITH DRAGGABLE FOCAL POSITIONING */
                       <div 
                         className="w-full h-full relative cursor-pointer"
                         onClick={() => setActiveLightboxPhoto(item)}
@@ -512,7 +603,12 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                         <img
                           src={item.url}
                           alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
+                          style={{
+                            objectPosition: `${focalX}% ${focalY}%`,
+                            transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+                            transformOrigin: `${focalX}% ${focalY}%`,
+                          }}
                         />
 
                         {/* Interactive Play Button for Video Previews */}
@@ -538,44 +634,29 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                             </span>
                           </div>
                         )}
-                      </div>
-                    ) : (
-                      /* HIGH-FIDELITY BRANDED ARCHIVE PLACEHOLDER */
-                      <div 
-                        className="w-full h-full bg-gradient-to-br from-emerald-950 via-stone-900 to-emerald-900 p-5 flex flex-col items-center justify-between text-center relative overflow-hidden cursor-pointer group-hover:opacity-95 transition-opacity"
-                        onClick={() => setActiveLightboxPhoto(item)}
-                      >
-                        <div
-                          className="absolute inset-0 opacity-[0.08] pointer-events-none"
-                          style={{
-                            backgroundImage: `radial-gradient(circle at 50% 50%, #84cc16 1.5px, transparent 1.5px)`,
-                            backgroundSize: '18px 18px',
-                          }}
-                        />
 
-                        <div className="relative z-10 w-full flex items-center justify-between text-[10px] text-lime-400 font-semibold tracking-wider uppercase">
-                          <span>{meta.shortLabel}</span>
-                          <span className="bg-stone-800/80 text-stone-300 px-1.5 py-0.5 rounded border border-stone-700">
-                            {isVideo ? 'Video Preview' : 'Photo'}
-                          </span>
-                        </div>
-
-                        <div className="relative z-10 flex flex-col items-center gap-2 my-auto">
-                          {isVideo ? (
-                            <div className="w-12 h-12 rounded-full bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-amber-300 shadow-md transform group-hover:scale-110 transition-transform">
-                              <Play className="w-6 h-6 ml-0.5 fill-current" />
-                            </div>
-                          ) : (
-                            <VRAILogo size={38} />
-                          )}
-                          <p className="text-white text-xs font-bold leading-snug line-clamp-2 px-1">
-                            {item.title}
-                          </p>
-                        </div>
-
-                        <div className="relative z-10 w-full pt-1.5 border-t border-white/10 text-[10px] text-stone-300 flex items-center justify-center gap-1 font-medium">
-                          {isVideo ? <Film className="w-3 h-3 text-amber-400" /> : <Camera className="w-3 h-3 text-lime-400" />}
-                          <span>{isVideo ? 'Click to preview video' : 'Click to inspect / replace'}</span>
+                        {/* Top-Right Quick Fit Box Button on Card Hover */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openFocalAdjustModal({
+                                type: 'gallery',
+                                keyOrId: item.id,
+                                url: item.url,
+                                title: item.title,
+                                focalPoint: item.focalPoint || { x: 50, y: 50 },
+                                zoom: item.zoom || 1.0,
+                                aspectRatio: '4:3',
+                              });
+                            }}
+                            className="bg-black/80 hover:bg-black text-white text-[10px] font-semibold px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1 shadow-sm border border-white/20"
+                            title="Adjust framing & drag face to fit box"
+                          >
+                            <Move className="w-3 h-3 text-amber-300" />
+                            <span>Fit Box</span>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -599,6 +680,15 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                           </>
                         )}
                       </span>
+
+                      {/* Event tag if wedding/anniversary */}
+                      {item.eventDetails && (
+                        <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-rose-700 text-white shadow-xs">
+                          {item.eventDetails.eventType === 'wedding' ? '💍 Wedding' :
+                           item.eventDetails.eventType === 'anniversary' ? '🥂 Anniversary' :
+                           item.eventDetails.eventType === 'milestone' ? '⛪ Jubilee' : '🙏 Dedication'}
+                        </span>
+                      )}
                     </div>
 
                     {/* Duration Badge for Videos */}
@@ -618,6 +708,11 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                         <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${meta.bg}`}>
                           {meta.label}
                         </span>
+                        {item.eventDetails?.anniversaryYears && (
+                          <span className="text-[10px] text-rose-700 font-bold font-mono">
+                            {item.eventDetails.anniversaryYears}
+                          </span>
+                        )}
                         {isVideo && (
                           <span className="text-[10px] text-amber-800 font-bold font-mono">
                             {item.duration || 'Video'}
@@ -633,10 +728,10 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                       </p>
                     </div>
 
-                    {/* ACTION INTERFACE: REPLACE, DELETE, QUICK MOVE & PREVIEW */}
+                    {/* ACTION INTERFACE: FIT BOX, REPLACE, DELETE, QUICK MOVE & PREVIEW */}
                     <div className="space-y-2 pt-2 border-t border-stone-100">
                       
-                      {/* Top Row: Quick Move Section Dropdown ("in case it was not correctly placed") */}
+                      {/* Top Row: Quick Move Section Dropdown */}
                       <div className="flex items-center justify-between text-[10px] text-stone-500 bg-stone-50 p-1.5 rounded-lg border border-stone-200/80">
                         <span className="font-semibold text-stone-600 pl-1 shrink-0">Section:</span>
                         <select
@@ -650,15 +745,38 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                         >
                           <option value="victorious-heritage">Victorious Heritage</option>
                           <option value="church">Church</option>
+                          <option value="church-events">Church Events (Weddings &amp; Anniversaries)</option>
                           <option value="women">Women</option>
                           <option value="vocational">Vocational</option>
                           <option value="life-at-heritage">Life at Victorious Heritage</option>
                         </select>
                       </div>
 
-                      {/* Bottom Row: Replace & Delete Controls */}
+                      {/* Bottom Row: Controls */}
                       <div className="flex items-center justify-between gap-1 pt-0.5">
                         <div className="flex items-center gap-1.5">
+                          {/* Fit Box / Drag Face Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openFocalAdjustModal({
+                                type: 'gallery',
+                                keyOrId: item.id,
+                                url: item.url,
+                                title: item.title,
+                                focalPoint: item.focalPoint || { x: 50, y: 50 },
+                                zoom: item.zoom || 1.0,
+                                aspectRatio: '4:3',
+                              });
+                            }}
+                            className="px-2 py-1.5 text-stone-700 hover:text-amber-900 bg-stone-100 hover:bg-amber-50 border border-stone-200 hover:border-amber-300 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1"
+                            title="Drag to fit box & position face squarely in view"
+                          >
+                            <Move className="w-3 h-3 text-amber-600" />
+                            <span>Fit Box</span>
+                          </button>
+
                           {/* Replace Button */}
                           <button
                             type="button"
@@ -854,12 +972,30 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                     </button>
                   </div>
                 )
-              ) : activeLightboxPhoto.isUserUploaded ? (
-                <img
-                  src={activeLightboxPhoto.url}
-                  alt={activeLightboxPhoto.title}
-                  className="w-full h-full object-contain"
-                />
+              ) : activeLightboxPhoto.url ? (
+                <div className="w-full h-full relative flex items-center justify-center p-2">
+                  <img
+                    src={activeLightboxPhoto.url}
+                    alt={activeLightboxPhoto.title}
+                    className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    style={{
+                      objectPosition: `${activeLightboxPhoto.focalPoint?.x ?? 50}% ${activeLightboxPhoto.focalPoint?.y ?? 50}%`,
+                    }}
+                  />
+                  {activeLightboxPhoto.eventDetails && (
+                    <div className="absolute top-4 left-4 bg-rose-700/90 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-xs flex items-center gap-1.5 shadow-md">
+                      <HeartHandshake className="w-3.5 h-3.5" />
+                      <span>
+                        {activeLightboxPhoto.eventDetails.eventType === 'wedding' ? '💍 Holy Matrimony' :
+                         activeLightboxPhoto.eventDetails.eventType === 'anniversary' ? '🥂 Wedding Anniversary' :
+                         activeLightboxPhoto.eventDetails.eventType === 'milestone' ? '⛪ Church Jubilee' : '🙏 Altar Thanksgiving'}
+                      </span>
+                      {activeLightboxPhoto.eventDetails.anniversaryYears && (
+                        <span>· {activeLightboxPhoto.eventDetails.anniversaryYears}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="p-8 text-center space-y-4 max-w-lg">
                   <VRAILogo size={64} />
@@ -870,9 +1006,6 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                     <p className="text-stone-300 text-xs leading-relaxed">
                       {activeLightboxPhoto.caption}
                     </p>
-                  </div>
-                  <div className="p-3 bg-stone-900 rounded-lg border border-stone-800 text-[11px] text-lime-400">
-                    Placeholders clearly demarcated in accordance with strict authentic integrity standards.
                   </div>
                 </div>
               )}
@@ -894,8 +1027,31 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                 </p>
               </div>
 
-              {/* Individual Media Action Interface: Quick Move, Replace & Delete */}
+              {/* Individual Media Action Interface: Fit Box, Quick Move, Replace & Delete */}
               <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {/* Fit Box / Drag to Center Face Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = activeLightboxPhoto;
+                    setActiveLightboxPhoto(null);
+                    openFocalAdjustModal({
+                      type: 'gallery',
+                      keyOrId: current.id,
+                      url: current.url,
+                      title: current.title,
+                      focalPoint: current.focalPoint || { x: 50, y: 50 },
+                      zoom: current.zoom || 1.0,
+                      aspectRatio: '4:3',
+                    });
+                  }}
+                  className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                  title="Adjust photo framing and drag to fit box"
+                >
+                  <Move className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Fit Box &amp; Drag Face</span>
+                </button>
+
                 {/* Re-categorize Dropdown ("incase its not correct placed") */}
                 <div className="flex items-center gap-1.5 bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs">
                   <span className="text-[11px] font-semibold text-stone-500">Section:</span>
@@ -910,6 +1066,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                   >
                     <option value="victorious-heritage">Victorious Heritage</option>
                     <option value="church">Church</option>
+                    <option value="church-events">Church Events (Weddings &amp; Anniversaries)</option>
                     <option value="women">Women</option>
                     <option value="vocational">Vocational</option>
                     <option value="life-at-heritage">Life at Victorious Heritage</option>
