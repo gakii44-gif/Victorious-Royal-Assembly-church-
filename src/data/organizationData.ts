@@ -311,7 +311,7 @@ export const organizationData: OrganizationData = {
     primaryButtonText: "Discover Our Mission",
     secondaryButtonText: "Partner With Us",
     photoSlotKey: "home-hero",
-    photoPlaceholderPath: "/assets/church/services/hero-church.jpg",
+    photoPlaceholderPath: "/assets/church/services/hero-church.svg",
   },
 
   welcome: {
@@ -353,7 +353,7 @@ export const organizationData: OrganizationData = {
       ],
       iconType: "worship",
       photoSlotKey: "ministry-worship",
-      photoPlaceholderPath: "/assets/church/services/sunday-worship.jpg",
+      photoPlaceholderPath: "/assets/church/services/sunday-worship.svg",
     },
     {
       id: "evangelism-missions",
@@ -367,7 +367,7 @@ export const organizationData: OrganizationData = {
       ],
       iconType: "evangelism",
       photoSlotKey: "ministry-evangelism",
-      photoPlaceholderPath: "/assets/church/services/evangelism.jpg",
+      photoPlaceholderPath: "/assets/church/services/evangelism.svg",
     },
     {
       id: "healing-deliverance",
@@ -381,7 +381,7 @@ export const organizationData: OrganizationData = {
       ],
       iconType: "healing",
       photoSlotKey: "ministry-healing",
-      photoPlaceholderPath: "/assets/church/services/anointing-service.jpg",
+      photoPlaceholderPath: "/assets/church/services/anointing-service.svg",
     },
     {
       id: "community-outreach",
@@ -395,7 +395,7 @@ export const organizationData: OrganizationData = {
       ],
       iconType: "outreach",
       photoSlotKey: "ministry-outreach",
-      photoPlaceholderPath: "/assets/church/outreach/womens-fellowship.jpg",
+      photoPlaceholderPath: "/assets/church/outreach/womens-fellowship.svg",
     },
     {
       id: "childrens-ministry",
@@ -409,7 +409,7 @@ export const organizationData: OrganizationData = {
       ],
       iconType: "children",
       photoSlotKey: "ministry-children",
-      photoPlaceholderPath: "/assets/church/outreach/childrens-ministry.jpg",
+      photoPlaceholderPath: "/assets/church/outreach/childrens-ministry.svg",
     },
   ],
 
@@ -459,27 +459,27 @@ export const organizationData: OrganizationData = {
       },
     ],
     photoSlotKey: "school-hero",
-    photoPlaceholderPath: "/assets/schools/heritage-academy/hero-heritage.jpg",
+    photoPlaceholderPath: "/assets/schools/heritage-academy/hero-heritage.svg",
     gallerySlots: [
       {
         id: "sch-1",
         title: "Morning Assembly & Pupils in Uniform",
         description: "Pupils gathering for morning devotion and national anthem.",
-        path: "/assets/schools/heritage-academy/morning-assembly.jpg",
+        path: "/assets/schools/heritage-academy/morning-assembly.svg",
         slotKey: "school-assembly",
       },
       {
         id: "sch-2",
         title: "Classroom Instruction & Reading",
         description: "Pupils practicing handwriting and blackboard exercises.",
-        path: "/assets/schools/heritage-academy/classroom-reading.jpg",
+        path: "/assets/schools/heritage-academy/classroom-reading.svg",
         slotKey: "school-classroom",
       },
       {
         id: "sch-3",
         title: "Pupil Nutrition & Recess",
         description: "Students sharing clean water and recreation during school break.",
-        path: "/assets/schools/heritage-academy/school-nutrition.jpg",
+        path: "/assets/schools/heritage-academy/school-nutrition.svg",
         slotKey: "school-meals",
       },
     ],
@@ -494,7 +494,7 @@ export const organizationData: OrganizationData = {
       "Academic Convocations: Honoring teachers, graduates, and community servants with formal academic recognition.",
     ],
     photoSlotKey: "outreach-hero",
-    photoPlaceholderPath: "/assets/church/outreach/convocation-ceremony.jpg",
+    photoPlaceholderPath: "/assets/church/outreach/convocation-ceremony.svg",
   },
 
   partnership: {
@@ -562,7 +562,7 @@ export const organizationData: OrganizationData = {
         contactPerson: "Education Partnership Secretariat, Juba, South Sudan",
         isVerified: false,
         photoSlotKey: "project-classrooms",
-        photoPlaceholderPath: "/assets/schools/heritage-academy/classroom-expansion.jpg",
+        photoPlaceholderPath: "/assets/schools/heritage-academy/classroom-expansion.svg",
       },
       {
         id: "proj-pupil-nutrition",
@@ -586,7 +586,7 @@ export const organizationData: OrganizationData = {
         contactPerson: "Welfare & Nutrition Coordinator, Juba",
         isVerified: false,
         photoSlotKey: "project-nutrition",
-        photoPlaceholderPath: "/assets/schools/heritage-academy/school-nutrition.jpg",
+        photoPlaceholderPath: "/assets/schools/heritage-academy/school-nutrition.svg",
       },
       {
         id: "proj-widows-relief",
@@ -610,7 +610,7 @@ export const organizationData: OrganizationData = {
         contactPerson: "Community Outreach Director, Juba",
         isVerified: false,
         photoSlotKey: "project-widows",
-        photoPlaceholderPath: "/assets/church/outreach/womens-fellowship.jpg",
+        photoPlaceholderPath: "/assets/church/outreach/womens-fellowship.svg",
       },
     ],
   },
@@ -630,7 +630,7 @@ export const organizationData: OrganizationData = {
       category: "Education",
       isVerifiedStory: false,
       photoSlotKey: "story-school",
-      photoPlaceholderPath: "/assets/schools/heritage-academy/morning-assembly.jpg",
+      photoPlaceholderPath: "/assets/schools/heritage-academy/morning-assembly.svg",
     },
     {
       id: "story-annual-convocation",
@@ -646,7 +646,7 @@ export const organizationData: OrganizationData = {
       category: "Ministry & Convocations",
       isVerifiedStory: false,
       photoSlotKey: "story-convocation",
-      photoPlaceholderPath: "/assets/church/outreach/convocation-ceremony.jpg",
+      photoPlaceholderPath: "/assets/church/outreach/convocation-ceremony.svg",
     },
     {
       id: "story-community-fellowship",
@@ -662,7 +662,7 @@ export const organizationData: OrganizationData = {
       category: "Outreach",
       isVerifiedStory: false,
       photoSlotKey: "story-women",
-      photoPlaceholderPath: "/assets/church/outreach/womens-fellowship.jpg",
+      photoPlaceholderPath: "/assets/church/outreach/womens-fellowship.svg",
     },
   ],
 
@@ -905,24 +905,24 @@ export const organizationData: OrganizationData = {
           id: "hg-1",
           title: "Morning Assembly & Devotion",
           caption: "Pupils gathered for worship, praise, and morning announcements.",
-          path: "/assets/schools/heritage-academy/morning-assembly.jpg",
+          path: "/assets/schools/heritage-academy/morning-assembly.svg",
         },
         {
           id: "hg-2",
           title: "Classroom Instruction & Reading",
           caption: "Pupils engaged in English literacy, math, and science lessons.",
-          path: "/assets/schools/heritage-academy/classroom-reading.jpg",
+          path: "/assets/schools/heritage-academy/classroom-reading.svg",
         },
         {
           id: "hg-3",
           title: "Pupil Nutrition & Recess",
           caption: "Children sharing midday nourishment and outdoor recreation.",
-          path: "/assets/schools/heritage-academy/school-nutrition.jpg",
+          path: "/assets/schools/heritage-academy/school-nutrition.svg",
         },
       ],
       photoSlotKey: "school-hero",
-      photoPlaceholderPath: "/assets/schools/heritage-academy/hero-heritage.jpg",
-      heroImagePlaceholder: "/assets/schools/heritage-academy/hero-heritage.jpg",
+      photoPlaceholderPath: "/assets/schools/heritage-academy/hero-heritage.svg",
+      heroImagePlaceholder: "/assets/schools/heritage-academy/hero-heritage.svg",
     },
 
     vocationalSchool: {
@@ -1029,24 +1029,24 @@ export const organizationData: OrganizationData = {
           id: "vg-1",
           title: "Tailoring & Garment Workshop",
           caption: "Trainees learning garment pattern cutting and machine sewing.",
-          path: "/assets/schools/vocational-school/tailoring-workshop.jpg",
+          path: "/assets/schools/vocational-school/tailoring-workshop.svg",
         },
         {
           id: "vg-2",
           title: "Carpentry & Joinery Apprentice Station",
           caption: "Youth crafting sturdy wooden study desks and cabinetry.",
-          path: "/assets/schools/vocational-school/carpentry-workshop.jpg",
+          path: "/assets/schools/vocational-school/carpentry-workshop.svg",
         },
         {
           id: "vg-3",
           title: "Solar Technician Practical Assembly",
           caption: "Apprentices wiring charge controllers and solar storage arrays.",
-          path: "/assets/schools/vocational-school/solar-electrical.jpg",
+          path: "/assets/schools/vocational-school/solar-electrical.svg",
         },
       ],
       photoSlotKey: "vocational-hero",
-      photoPlaceholderPath: "/assets/schools/vocational-school/hero-vocational.jpg",
-      heroImagePlaceholder: "/assets/schools/vocational-school/hero-vocational.jpg",
+      photoPlaceholderPath: "/assets/schools/vocational-school/hero-vocational.svg",
+      heroImagePlaceholder: "/assets/schools/vocational-school/hero-vocational.svg",
     },
   },
 
@@ -1058,7 +1058,7 @@ export const organizationData: OrganizationData = {
       title: "Spiritual Leader, Apostle & Founder",
       bio: "Founding visionary of Victorious Royal Assembly International and Victorious Heritage Model Nursery & Primary School. Preaching the Word of Faith, Healing, and Deliverance, and pioneering holistic basic education, child feeding, and vocational training across Juba, South Sudan.",
       bioPlaceholder: "Founding visionary of Victorious Royal Assembly International and Victorious Heritage Model Nursery & Primary School. Preaching the Word of Faith, Healing, and Deliverance, and pioneering holistic basic education, child feeding, and vocational training across Juba, South Sudan.",
-      photoPlaceholder: "/assets/church/leadership/senior-pastor.jpg",
+      photoPlaceholder: "/assets/church/leadership/senior-pastor.svg",
     },
     {
       name: "[Associate Pastor Name — Update in organizationData.ts]",
@@ -1067,7 +1067,7 @@ export const organizationData: OrganizationData = {
       title: "Missionary & Evangelism Coordinator",
       bio: "Overseeing grassroots community evangelism, pastoral counseling, prayer networks, and regional outreach throughout Central Equatoria.",
       bioPlaceholder: "Overseeing grassroots community evangelism, pastoral counseling, prayer networks, and regional outreach throughout Central Equatoria.",
-      photoPlaceholder: "/assets/church/leadership/associate-pastor.jpg",
+      photoPlaceholder: "/assets/church/leadership/associate-pastor.svg",
     },
     {
       name: "[Head Teacher Name — Update in organizationData.ts]",
@@ -1076,7 +1076,7 @@ export const organizationData: OrganizationData = {
       title: "Primary Education Director",
       bio: "Leading academic instruction, teacher supervision, South Sudan curriculum standards, and pupil welfare initiatives for early childhood and primary classes.",
       bioPlaceholder: "Leading academic instruction, teacher supervision, South Sudan curriculum standards, and pupil welfare initiatives for early childhood and primary classes.",
-      photoPlaceholder: "/assets/church/leadership/head-teacher.jpg",
+      photoPlaceholder: "/assets/church/leadership/head-teacher.svg",
     },
     {
       name: "[Vocational Director Name — Update in organizationData.ts]",
@@ -1085,7 +1085,7 @@ export const organizationData: OrganizationData = {
       title: "Vocational & Enterprise Dean",
       bio: "Directing technical skills training in tailoring, electrical systems, carpentry, and entrepreneurship to empower South Sudanese youth with self-reliant livelihoods.",
       bioPlaceholder: "Directing technical skills training in tailoring, electrical systems, carpentry, and entrepreneurship to empower South Sudanese youth with self-reliant livelihoods.",
-      photoPlaceholder: "/assets/church/leadership/vocational-director.jpg",
+      photoPlaceholder: "/assets/church/leadership/vocational-director.svg",
     },
   ],
 
@@ -1096,7 +1096,7 @@ export const organizationData: OrganizationData = {
       category: "Compassion Ministry",
       description: "Providing spiritual care, dry food rations, trauma healing circles, and emergency support for vulnerable widow-headed households in Juba.",
       impactHighlight: "Monthly food distribution & micro-enterprise fellowship circles",
-      photoPlaceholder: "/assets/church/outreach/womens-fellowship.jpg",
+      photoPlaceholder: "/assets/church/outreach/womens-fellowship.svg",
     },
     {
       id: "outreach-convocation",
@@ -1104,7 +1104,7 @@ export const organizationData: OrganizationData = {
       category: "Education & Dignity",
       description: "Hosting solemn academic ceremonies honoring church leaders, educators, and community servants adorned in formal academic regalia to affirm learning.",
       impactHighlight: "Promoting Christian scholarship and community leadership dignity",
-      photoPlaceholder: "/assets/church/outreach/convocation-ceremony.jpg",
+      photoPlaceholder: "/assets/church/outreach/convocation-ceremony.svg",
     },
     {
       id: "outreach-youth-peace",
@@ -1112,7 +1112,7 @@ export const organizationData: OrganizationData = {
       category: "Reconciliation",
       description: "Bringing young men and women from diverse cultural backgrounds together for Bible study, sports, leadership training, and peaceful unity.",
       impactHighlight: "Fostering inter-ethnic brotherhood and spiritual grounding",
-      photoPlaceholder: "/assets/church/outreach/childrens-ministry.jpg",
+      photoPlaceholder: "/assets/church/outreach/childrens-ministry.svg",
     },
     {
       id: "outreach-medical-hygiene",
@@ -1120,7 +1120,7 @@ export const organizationData: OrganizationData = {
       category: "Public Health",
       description: "Promoting disease prevention, clean water filtration, and emergency medical assistance to vulnerable neighborhood families.",
       impactHighlight: "Protecting children and mothers from waterborne infections",
-      photoPlaceholder: "/assets/church/services/sunday-worship.jpg",
+      photoPlaceholder: "/assets/church/services/sunday-worship.svg",
     },
   ],
 };

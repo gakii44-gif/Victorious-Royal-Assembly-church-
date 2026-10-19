@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, HeartHandshake, Compass, Camera, Shield } from 'lucide-react';
+import { Menu, X, HeartHandshake, Compass, Camera, Shield, HardDrive } from 'lucide-react';
 import { VRAILogo } from './VRAILogo';
 import { organizationData } from '../data/organizationData';
 import { usePhotos } from '../context/PhotoContext';
@@ -26,6 +26,7 @@ interface NavbarProps {
   onOpenAssetGuide: () => void;
   onOpenDonateModal: () => void;
   onOpenLogoPreview?: (tab?: 'church' | 'school' | 'both') => void;
+  onOpenPhotoSync?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -34,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAssetGuide,
   onOpenDonateModal,
   onOpenLogoPreview,
+  onOpenPhotoSync,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false);
@@ -111,6 +113,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Upload Photos ({uploadedCount})</span>
             </button>
             <span aria-hidden="true">·</span>
+            {onOpenPhotoSync && (
+              <>
+                <button
+                  onClick={onOpenPhotoSync}
+                  className="bg-emerald-800/80 hover:bg-emerald-700 text-lime-300 hover:text-white font-bold px-2 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all border border-lime-400/30 shadow-xs"
+                  title="Transfer or backup photos between preview and published website"
+                >
+                  <HardDrive className="w-3 h-3 text-lime-400" />
+                  <span>Sync / Transfer</span>
+                </button>
+                <span aria-hidden="true">·</span>
+              </>
+            )}
             <button
               onClick={() => onOpenLogoPreview?.('both')}
               className="text-amber-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"

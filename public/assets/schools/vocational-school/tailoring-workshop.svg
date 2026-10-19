@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tailorBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c4a6e"/>
+      <stop offset="60%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#tailorBg)"/>
+
+  <!-- Workshop Heading -->
+  <text x="600" y="90" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="28" font-weight="900" fill="#fef08a" text-anchor="middle" letter-spacing="2">VOCATIONAL TAILORING &amp; GARMENT DESIGN</text>
+  <text x="600" y="130" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="700" fill="#bae6fd" text-anchor="middle">Victorious Technical Training Centre · Economic Empowerment</text>
+
+  <!-- Heavy-Duty Sewing Machine Illustration -->
+  <g transform="translate(600, 470)">
+    <!-- Wooden Table Top -->
+    <rect x="-380" y="10" width="760" height="45" rx="4" fill="#a16207" stroke="#78350f" stroke-width="3"/>
+    <!-- Iron Treadle Stand Legs -->
+    <rect x="-320" y="55" width="25" height="190" fill="#1e293b"/>
+    <rect x="295" y="55" width="25" height="190" fill="#1e293b"/>
+    <ellipse cx="0" cy="180" rx="90" ry="25" fill="#334155"/>
+
+    <!-- Sewing Machine Body (Classic Black & Chrome Cast Iron) -->
+    <path d="M -180,10 L -180,-140 Q -180,-190 -120,-190 L 140,-190 Q 180,-190 180,-140 L 180,10 Z" fill="#0f172a" stroke="#475569" stroke-width="3"/>
+    <!-- Throat & Needle Arm -->
+    <path d="M -180,-130 L -50,-130 L -50,-70 L -180,-70 Z" fill="url(#tailorBg)"/>
+    <!-- Needle Bar -->
+    <rect x="-140" y="-70" width="8" height="75" fill="#cbd5e1"/>
+    <!-- Spool of Thread -->
+    <rect x="130" y="-230" width="25" height="40" rx="3" fill="#e11d48"/>
+    <line x1="142" y1="-190" x2="-136" y2="-30" stroke="#f43f5e" stroke-width="2"/>
+    <!-- Hand Wheel -->
+    <ellipse cx="180" cy="-100" rx="16" ry="60" fill="#64748b" stroke="#94a3b8" stroke-width="2"/>
+
+    <!-- Colorful African Fabrics on Table -->
+    <polygon points="-360,10 -220,10 -200,-15 -340,-15" fill="#facc15" stroke="#eab308"/>
+    <polygon points="-240,10 -100,10 -90,-20 -230,-20" fill="#10b981" stroke="#059669"/>
+    <!-- Tape Measure -->
+    <path d="M 50,-5 Q 120,-15 200,-5 Q 260,-20 320,-5" fill="none" stroke="#fef08a" stroke-width="8" stroke-dasharray="3,3"/>
+  </g>
+
+  <!-- Bottom Details -->
+  <rect x="0" y="740" width="1200" height="60" fill="#082f49" opacity="0.95"/>
+  <text x="600" y="777" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Practical Trade Skills · Tailoring, Apparel Craft &amp; Entrepreneurship in Juba</text>
+</svg>

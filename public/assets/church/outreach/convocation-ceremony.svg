@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="convoBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+    <linearGradient id="goldGown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="purpleGown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6b21a8"/>
+      <stop offset="100%" stop-color="#3b0764"/>
+    </linearGradient>
+    <linearGradient id="crimsonGown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#991b1b"/>
+      <stop offset="100%" stop-color="#450a0a"/>
+    </linearGradient>
+    <radialGradient id="stageSpot" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#fef08a" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Stage -->
+  <rect width="1200" height="800" fill="url(#convoBg)"/>
+  <rect width="1200" height="800" fill="url(#stageSpot)"/>
+
+  <!-- Altar / Platform Arch & Banners -->
+  <path d="M 150 800 L 150 240 Q 600 80 1050 240 L 1050 800 Z" fill="#042f2e" opacity="0.6"/>
+  <path d="M 200 800 L 200 280 Q 600 130 1000 280 L 1000 800 Z" fill="#064e3b" opacity="0.4"/>
+
+  <!-- Official Backdrop Header Ribbon -->
+  <rect x="250" y="140" width="700" height="70" rx="12" fill="#022c22" stroke="#d97706" stroke-width="2"/>
+  <text x="600" y="172" fill="#fbbf24" font-family="system-ui, sans-serif" font-size="19" font-weight="900" letter-spacing="3" text-anchor="middle">VICTORIOUS ROYAL ASSEMBLY INTERNATIONAL</text>
+  <text x="600" y="196" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="13" font-weight="700" letter-spacing="4" text-anchor="middle">SOLEMN ACADEMIC CONVOCATION &amp; LEADERSHIP INVESTITURE · JUBA</text>
+
+  <!-- Golden Pulpit Altar with Cross -->
+  <path d="M 540 460 L 660 460 L 680 750 L 520 750 Z" fill="#78350f" stroke="#d97706" stroke-width="2"/>
+  <rect x="530" y="440" width="140" height="25" rx="4" fill="#92400e" stroke="#fbbf24" stroke-width="2"/>
+  <!-- Open Scripture on Podium -->
+  <path d="M 565 440 L 600 445 L 635 440 L 630 432 L 600 435 L 570 432 Z" fill="#fef3c7" stroke="#78350f" stroke-width="1.5"/>
+  <!-- Gold Cross on Podium -->
+  <rect x="596" y="490" width="8" height="60" rx="2" fill="#f59e0b"/>
+  <rect x="580" y="505" width="40" height="8" rx="2" fill="#f59e0b"/>
+
+  <!-- Convocation Leaders in Doctoral Academic Regalia -->
+  <!-- Center: Senior Pastor / Presiding Chancellor in Gold & Royal Purple Regalia -->
+  <g transform="translate(600, 480)">
+    <!-- Robe / Gown Body -->
+    <path d="M -75 270 Q -60 120 -40 70 Q 0 45 40 70 Q 60 120 75 270 Z" fill="url(#purpleGown)" stroke="#1e1b4b" stroke-width="2"/>
+    <!-- Gold Velvet Stole & Trim -->
+    <path d="M -30 65 L -15 250 L 0 255 L 15 250 L 30 65 Z" fill="url(#goldGown)"/>
+    <line x1="-25" y1="120" x2="-5" y2="120" stroke="#fef3c7" stroke-width="3"/>
+    <line x1="-25" y1="140" x2="-5" y2="140" stroke="#fef3c7" stroke-width="3"/>
+    <line x1="-25" y1="160" x2="-5" y2="160" stroke="#fef3c7" stroke-width="3"/>
+    <line x1="5" y1="120" x2="25" y2="120" stroke="#fef3c7" stroke-width="3"/>
+    <line x1="5" y1="140" x2="25" y2="140" stroke="#fef3c7" stroke-width="3"/>
+    <line x1="5" y1="160" x2="25" y2="160" stroke="#fef3c7" stroke-width="3"/>
+    <!-- Hands holding scroll/bible -->
+    <ellipse cx="0" cy="200" rx="18" ry="12" fill="#78350f"/>
+    <rect x="-22" y="195" width="44" height="12" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <!-- Head & Academic Mortarboard / Tudor Tam -->
+    <ellipse cx="0" cy="20" rx="28" ry="34" fill="#5c3821"/>
+    <!-- Beard & Face Profile -->
+    <ellipse cx="0" cy="26" rx="22" ry="26" fill="#451a03"/>
+    <ellipse cx="0" cy="38" rx="14" ry="14" fill="#291205"/>
+    <!-- Velvet Tudor Tam (Doctoral Cap) with Gold Bullion Tassel -->
+    <ellipse cx="0" cy="-6" rx="42" ry="16" fill="#3b0764" stroke="#d97706" stroke-width="2"/>
+    <circle cx="0" cy="-8" r="5" fill="#f59e0b"/>
+    <path d="M 0 -8 Q 25 -2 34 20" stroke="#fbbf24" stroke-width="3" fill="none"/>
+    <circle cx="34" cy="22" r="5" fill="#fbbf24"/>
+  </g>
+
+  <!-- Left: Educator / Academic Dean in Crimson & Gold Doctoral Gown -->
+  <g transform="translate(420, 500)">
+    <path d="M -65 250 Q -50 110 -35 65 Q 0 45 35 65 Q 50 110 65 250 Z" fill="url(#crimsonGown)"/>
+    <path d="M -25 65 L -10 230 L 10 230 L 25 65 Z" fill="url(#goldGown)"/>
+    <!-- Hands holding diploma certificate -->
+    <rect x="-18" y="175" width="36" height="24" rx="2" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <ellipse cx="0" cy="24" rx="24" ry="28" fill="#5c3821"/>
+    <!-- Mortarboard Cap -->
+    <polygon points="0,-10 40,2 0,14 -40,2" fill="#1c1917" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="-18" y="2" width="36" height="16" rx="4" fill="#1c1917"/>
+    <path d="M 0 2 Q 22 10 28 26" stroke="#fbbf24" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Right: Church Minister & Leader in Royal Blue & Emerald Regalia -->
+  <g transform="translate(780, 500)">
+    <path d="M -65 250 Q -50 110 -35 65 Q 0 45 35 65 Q 50 110 65 250 Z" fill="#0f766e" stroke="#042f2e" stroke-width="2"/>
+    <path d="M -25 65 L -10 230 L 10 230 L 25 65 Z" fill="#fef08a"/>
+    <rect x="-18" y="175" width="36" height="24" rx="2" fill="#fffbeb" stroke="#065f46" stroke-width="1.5"/>
+    <ellipse cx="0" cy="24" rx="24" ry="28" fill="#451a03"/>
+    <!-- Mortarboard Cap -->
+    <polygon points="0,-10 40,2 0,14 -40,2" fill="#042f2e" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect x="-18" y="2" width="36" height="16" rx="4" fill="#042f2e"/>
+    <path d="M 0 2 Q 22 10 28 26" stroke="#fbbf24" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Foreground Floral Altar Arrangements -->
+  <g transform="translate(260, 680)">
+    <ellipse cx="0" cy="50" rx="45" ry="25" fill="#78350f"/>
+    <circle cx="-20" cy="15" r="16" fill="#f43f5e"/>
+    <circle cx="15" cy="10" r="18" fill="#fbbf24"/>
+    <circle cx="0" cy="-5" r="20" fill="#ffffff"/>
+    <circle cx="-10" cy="-20" r="14" fill="#f43f5e"/>
+    <circle cx="20" cy="-15" r="15" fill="#fbbf24"/>
+  </g>
+
+  <g transform="translate(940, 680)">
+    <ellipse cx="0" cy="50" rx="45" ry="25" fill="#78350f"/>
+    <circle cx="-20" cy="15" r="16" fill="#f43f5e"/>
+    <circle cx="15" cy="10" r="18" fill="#fbbf24"/>
+    <circle cx="0" cy="-5" r="20" fill="#ffffff"/>
+    <circle cx="-10" cy="-20" r="14" fill="#f43f5e"/>
+    <circle cx="20" cy="-15" r="15" fill="#fbbf24"/>
+  </g>
+
+  <!-- Lower Title Ribbon -->
+  <rect x="0" y="730" width="1200" height="70" fill="#022c22" opacity="0.95"/>
+  <line x1="0" y1="730" x2="1200" y2="730" stroke="#fbbf24" stroke-width="3"/>
+  <text x="600" y="772" fill="#ffffff" font-family="system-ui, sans-serif" font-size="18" font-weight="800" letter-spacing="2" text-anchor="middle">ACADEMIC CONVOCATION &amp; LEADERSHIP INVESTITURE SERVICE</text>
+</svg>

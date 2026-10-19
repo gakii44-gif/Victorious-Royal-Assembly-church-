@@ -639,7 +639,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((item) => {
             if (!item.url || item.url.trim() === '') {
-              return { ...item, url: '/assets/schools/heritage-academy/morning-assembly.jpg' };
+              return { ...item, url: '/assets/schools/heritage-academy/morning-assembly.svg' };
             }
             return item;
           });
@@ -879,9 +879,9 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!data || !data.url || data.url.trim() === '') continue;
         // If data URL is huge or blob URL, store default asset path for safe pre-hydration
         if (data.url.startsWith('data:image/') && data.url.length > 20000) {
-          lightweight[key] = { ...data, url: '/assets/church/services/hero-church.jpg' };
+          lightweight[key] = { ...data, url: '/assets/church/services/hero-church.svg' };
         } else if (data.url.startsWith('blob:')) {
-          lightweight[key] = { ...data, url: '/assets/church/services/hero-church.jpg' };
+          lightweight[key] = { ...data, url: '/assets/church/services/hero-church.svg' };
         } else {
           lightweight[key] = data;
         }
@@ -910,7 +910,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         if (!copy.url || copy.url.startsWith('blob:') || copy.url.length > 20000) {
           // Provide safe non-empty fallback path
-          copy.url = '/assets/schools/heritage-academy/morning-assembly.jpg';
+          copy.url = '/assets/schools/heritage-academy/morning-assembly.svg';
         }
         return copy;
       });

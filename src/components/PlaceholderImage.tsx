@@ -42,17 +42,27 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
   const [fileLoadFailed, setFileLoadFailed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  const cleanSrc = (s?: string | null) => {
+    if (!s) return null;
+    const trimmed = s.trim();
+    if (!trimmed) return null;
+    if (trimmed.endsWith('.jpg')) {
+      return trimmed.replace(/\.jpg$/i, '.svg');
+    }
+    return trimmed;
+  };
+
   // Check if user uploaded a photo via PhotoContext or have bundled fallback
   const uploaded = slotKey ? getPhoto(slotKey) : null;
-  const validUploaded = uploaded?.url && uploaded.url.trim() !== '' ? uploaded.url : null;
-  const validPropSrc = src && src.trim() !== '' && !fileLoadFailed ? src : null;
+  const validUploaded = uploaded?.url && uploaded.url.trim() !== '' ? cleanSrc(uploaded.url) : null;
+  const validPropSrc = src && src.trim() !== '' && !fileLoadFailed ? cleanSrc(src) : null;
 
   // Category fallback to ensure every slot displays a real image when opened from GitHub
   const categoryDefault = 
     category === 'school' ? '/assets/schools/heritage-academy/morning-assembly.svg' :
     category === 'vocational' ? '/assets/vocational/tailoring.svg' :
     category === 'leadership' ? '/assets/church/fellowships/women-fellowship.svg' :
-    category === 'outreach' ? '/assets/church/services/sunday-worship.svg' :
+    category === 'outreach' ? '/assets/church/outreach/convocation-ceremony.svg' :
     '/assets/church/services/hero-church.svg';
 
   const activeSrc = validUploaded || validPropSrc || categoryDefault;
@@ -73,13 +83,20 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
   return (
     <div className={`relative group overflow-hidden rounded-xl bg-stone-900 ${aspectClass} ${className}`}>
       <img
+        key={activeSrc}
         src={activeSrc}
         alt={uploaded?.alt || alt}
         referrerPolicy="no-referrer"
         onLoad={() => setImageLoaded(true)}
-        onError={() => setFileLoadFailed(true)}
+        onError={() => {
+          if (!fileLoadFailed) {
+            setFileLoadFailed(true);
+          } else {
+            setImageLoaded(true);
+          }
+        }}
         className={`w-full h-full object-cover transition-all duration-300 ${
-          imageLoaded ? 'opacity-100' : 'opacity-0'
+          imageLoaded ? 'opacity-100' : 'opacity-90'
         }`}
         style={{
           objectPosition: `${focalX}% ${focalY}%`,

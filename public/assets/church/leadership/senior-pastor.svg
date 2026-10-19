@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="pastorBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#022c22"/>
+      <stop offset="50%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#021c16"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="35%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#022c22" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="suit" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="800" fill="url(#pastorBg)"/>
+  <rect width="800" height="800" fill="url(#halo)"/>
+
+  <!-- Altar Cross in background -->
+  <rect x="395" y="60" width="10" height="150" rx="3" fill="#f59e0b" opacity="0.4"/>
+  <rect x="350" y="100" width="100" height="10" rx="3" fill="#f59e0b" opacity="0.4"/>
+
+  <!-- Senior Pastor Silhouette & Robe Profile -->
+  <g transform="translate(400, 430)">
+    <!-- Shoulders & Dark Suit with Clerical Collar -->
+    <path d="M -220 370 Q -170 180 -100 110 Q 0 80 100 110 Q 170 180 220 370 Z" fill="url(#suit)" stroke="#334155" stroke-width="2"/>
+    <!-- Clerical Shirt & White Collar Tab -->
+    <path d="M -45 105 L 0 170 L 45 105 Z" fill="#0f172a"/>
+    <rect x="-24" y="105" width="48" height="18" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <path d="M -8 105 L -8 123 L 8 123 L 8 105 Z" fill="#ffffff"/>
+    
+    <!-- Bishop / Pastoral Purple & Gold Stole -->
+    <path d="M -75 110 L -45 370 L -15 370 L -45 110 Z" fill="#581c87" stroke="#fbbf24" stroke-width="2"/>
+    <path d="M 45 110 L 15 370 L 45 370 L 75 110 Z" fill="#581c87" stroke="#fbbf24" stroke-width="2"/>
+    <rect x="-70" y="220" width="22" height="22" rx="2" fill="#fbbf24"/>
+    <rect x="48" y="220" width="22" height="22" rx="2" fill="#fbbf24"/>
+
+    <!-- Pectoral Cross on Chain -->
+    <path d="M -20 115 Q 0 210 0 210 Q 0 210 20 115" stroke="#f59e0b" stroke-width="2.5" fill="none"/>
+    <rect x="-4" y="210" width="8" height="38" rx="1.5" fill="#f59e0b"/>
+    <rect x="-14" y="220" width="28" height="8" rx="1.5" fill="#f59e0b"/>
+
+    <!-- Head & Facial Features -->
+    <ellipse cx="0" cy="20" rx="68" ry="82" fill="#451a03"/>
+    <ellipse cx="0" cy="30" rx="55" ry="60" fill="#3b1302"/>
+    <!-- Trimmed Beard & Chin -->
+    <ellipse cx="0" cy="62" rx="34" ry="26" fill="#1c0901"/>
+    <!-- Gentle Smile & Dignity -->
+    <path d="M -18 52 Q 0 62 18 52" stroke="#ffffff" stroke-width="2" fill="none"/>
+
+    <!-- Hands holding the Holy Bible -->
+    <g transform="translate(0, 270)">
+      <rect x="-70" y="0" width="140" height="75" rx="8" fill="#78350f" stroke="#fbbf24" stroke-width="3"/>
+      <!-- Gold embossed cross on Bible cover -->
+      <rect x="-4" y="16" width="8" height="42" rx="1.5" fill="#fbbf24"/>
+      <rect x="-16" y="28" width="32" height="8" rx="1.5" fill="#fbbf24"/>
+      <!-- Gold Ribbon Bookmark -->
+      <path d="M 0 0 L 0 85 L 8 75 L 16 85 L 16 0" fill="#dc2626"/>
+      <!-- Hands -->
+      <ellipse cx="-75" cy="35" rx="18" ry="24" fill="#5c2605"/>
+      <ellipse cx="75" cy="35" rx="18" ry="24" fill="#5c2605"/>
+    </g>
+  </g>
+
+  <!-- Official Name Plaque Ribbon -->
+  <rect x="80" y="710" width="640" height="70" rx="12" fill="#022c22" stroke="#fbbf24" stroke-width="2"/>
+  <text x="400" y="742" fill="#ffffff" font-family="system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="middle">DR. APOSTLE ANDREW ABUBAKAR</text>
+  <text x="400" y="765" fill="#86efac" font-family="system-ui, sans-serif" font-size="12" font-weight="700" letter-spacing="2" text-anchor="middle">SENIOR PASTOR, GENERAL OVERSEER &amp; SCHOOL FOUNDER</text>
+</svg>

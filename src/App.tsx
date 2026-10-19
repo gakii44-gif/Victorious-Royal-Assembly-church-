@@ -9,6 +9,7 @@ import { FloatingHelpChildButton } from './components/FloatingHelpChildButton';
 import { LogoPreviewModal } from './components/LogoPreviewModal';
 import { PhotoFocalAdjustModal } from './components/PhotoFocalAdjustModal';
 import { ChurchEventUploadModal } from './components/ChurchEventUploadModal';
+import { PhotoSyncModal } from './components/PhotoSyncModal';
 import { usePhotos } from './context/PhotoContext';
 
 // Views

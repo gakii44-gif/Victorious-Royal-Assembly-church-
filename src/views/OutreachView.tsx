@@ -100,7 +100,7 @@ export const OutreachView: React.FC<OutreachViewProps> = ({
               In our recent convocation ceremony, leaders and educators received formal honors for their tireless service to youth education in South Sudan. Such ceremonies inspire both young primary pupils and vocational apprentices to aspire to the highest levels of scholarly, professional, and civic excellence.
             </p>
             <p className="text-stone-500 italic text-[11px]">
-              (Photographs from our recent convocation ceremony can be placed into <code className="bg-stone-100 text-emerald-800 px-1 py-0.5 rounded font-mono">/public/assets/church/outreach/convocation-ceremony.jpg</code>.)
+              (Photographs from our recent convocation ceremony can be placed into <code className="bg-stone-100 text-emerald-800 px-1 py-0.5 rounded font-mono">/public/assets/church/outreach/convocation-ceremony.svg</code>.)
             </p>
           </div>
         </div>

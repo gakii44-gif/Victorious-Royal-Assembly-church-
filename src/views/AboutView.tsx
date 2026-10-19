@@ -123,10 +123,10 @@ export const AboutView: React.FC<AboutViewProps> = ({
             <div className="w-full sm:w-36 shrink-0">
               <PlaceholderImage
                 slotKey="leader-overseer"
-                src="/assets/church/leadership/general-overseer.jpg"
+                src="/assets/church/leadership/senior-pastor.svg"
                 alt="Senior Pastor and General Overseer"
                 label="Senior Pastor / Overseer"
-                recommendedPath="/public/assets/church/leadership/general-overseer.jpg"
+                recommendedPath="/public/assets/church/leadership/senior-pastor.svg"
                 aspectRatio="1:1"
                 category="leadership"
                 onOpenAssetGuide={onOpenAssetGuide}
@@ -148,10 +148,10 @@ export const AboutView: React.FC<AboutViewProps> = ({
             <div className="w-full sm:w-36 shrink-0">
               <PlaceholderImage
                 slotKey="leader-education"
-                src="/assets/church/leadership/education-director.jpg"
+                src="/assets/church/leadership/head-teacher.svg"
                 alt="Victorious Heritage Primary School Head of School"
                 label="Head of School / Education Board"
-                recommendedPath="/public/assets/church/leadership/education-director.jpg"
+                recommendedPath="/public/assets/church/leadership/head-teacher.svg"
                 aspectRatio="1:1"
                 category="leadership"
                 onOpenAssetGuide={onOpenAssetGuide}
