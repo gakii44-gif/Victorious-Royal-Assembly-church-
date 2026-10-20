@@ -6,16 +6,16 @@ import {
   CheckCircle2, 
   AlertCircle, 
   HardDrive, 
-  ArrowRight, 
   RefreshCw, 
-  Info, 
   ShieldCheck, 
   Sparkles,
   FileCheck,
-  Globe
+  Globe,
+  CloudUpload,
+  Check
 } from 'lucide-react';
 import { usePhotos, GalleryPhotoItem, PhotoData } from '../context/PhotoContext';
-import { getMediaFile, saveMediaFile, getAllMediaBlobKeys } from '../utils/mediaStorage';
+import { getMediaFile, saveMediaFile } from '../utils/mediaStorage';
 
 interface PhotoSyncModalProps {
   isOpen: boolean;
@@ -26,8 +26,9 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
   const { 
     galleryPhotos, 
     photos, 
-    uploadMultipleGalleryPhotos, 
-    isStorageReady 
+    syncAllPhotosToServer,
+    isSyncingToServer,
+    serverPhotoCount 
   } = usePhotos();
 
   const [isExporting, setIsExporting] = useState(false);
@@ -35,15 +36,53 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [exportProgress, setExportProgress] = useState<string>('');
   const [importProgress, setImportProgress] = useState<string>('');
+  const [syncProgress, setSyncProgress] = useState<string>('');
+  const [syncPercent, setSyncPercent] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
   const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isPreviewHost = currentHost.includes('ais-dev') || currentHost.includes('aistudio.google.com') || currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
   const userUploadsCount = galleryPhotos.filter(p => p.isUserUploaded).length + Object.keys(photos).length;
 
-  // 1. Export all uploaded photos & metadata into a single transfer package file
+  // 1. ONE-CLICK DIRECT CLOUD/SERVER SYNC: Pushes all local IndexedDB photos to server in resilient batches
+  const handleDirectServerSync = async () => {
+    try {
+      setStatusMessage(null);
+      setSyncProgress('Preparing photos for live upload...');
+      setSyncPercent(0);
+      
+      const res = await syncAllPhotosToServer((prog) => {
+        setSyncProgress(prog.message);
+        setSyncPercent(prog.percent);
+      });
+
+      if (res.success) {
+        setSyncPercent(100);
+        setStatusMessage({
+          type: 'success',
+          text: `🎉 Success! Permanently saved ${res.count} photos to the live server. All photos are now stored on the server and will appear on the published website (vrai-empowering-futures.ai.studio) and on all mobile devices for all visitors!`,
+        });
+      } else {
+        setStatusMessage({
+          type: 'error',
+          text: `Server sync failed: ${res.error || 'Network error'}. You can also use the Export Archive package below as a backup.`,
+        });
+      }
+    } catch (err: any) {
+      setStatusMessage({
+        type: 'error',
+        text: `Error: ${err?.message || 'Sync failed'}`,
+      });
+    } finally {
+      setTimeout(() => {
+        setSyncProgress('');
+        setSyncPercent(0);
+      }, 4000);
+    }
+  };
+
+  // 2. Export all uploaded photos & metadata into a single transfer package file
   const handleExportPackage = async () => {
     try {
       setIsExporting(true);
@@ -86,7 +125,7 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
       }
 
       // Extract slot item blobs
-      for (const [slotKey, data] of Object.entries(photos)) {
+      for (const [slotKey, _data] of Object.entries(photos)) {
         processed++;
         setExportProgress(`Packaging slot ${slotKey}...`);
         try {
@@ -114,7 +153,7 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
 
       setStatusMessage({
         type: 'success',
-        text: `Export complete! Downloaded archive with ${userItems.length} photos and slot images. Keep this file safe or import it into your published website.`,
+        text: `Export complete! Downloaded archive with ${userItems.length} photos and slot images. Keep this file safe or import it on any device.`,
       });
     } catch (err: any) {
       setStatusMessage({
@@ -131,10 +170,7 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
   const blobToBase64 = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        resolve(result);
-      };
+      reader.onloadend = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
@@ -145,7 +181,7 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
     return fetch(dataUrl).then(res => res.blob());
   };
 
-  // 2. Import transfer package file into this browser's IndexedDB
+  // 3. Import transfer package file into this browser's IndexedDB and save to server
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -184,7 +220,6 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
         const newItems = importedGallery.filter(p => !existingIds.has(p.id));
         
         if (newItems.length > 0) {
-          // Trigger reload by updating localStorage and reloading
           const updated = [...newItems, ...galleryPhotos];
           localStorage.setItem('vrai_church_gallery_photos', JSON.stringify(updated));
         }
@@ -194,6 +229,22 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
         const currentSlots = photos || {};
         const mergedSlots = { ...currentSlots, ...parsed.slotPhotos };
         localStorage.setItem('vrai_church_uploaded_photos', JSON.stringify(mergedSlots));
+      }
+
+      // Automatically push imported archive to live server so all visitors see it
+      setImportProgress('Permanently syncing imported photos to live server...');
+      try {
+        await fetch('/api/photos/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            galleryPhotos: importedGallery,
+            slotPhotos: parsed.slotPhotos || {},
+            blobs,
+          }),
+        });
+      } catch (srvErr) {
+        console.warn('Server sync after import skipped:', srvErr);
       }
 
       setStatusMessage({
@@ -227,14 +278,14 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
         <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-lime-400/20 border border-lime-400/40 flex items-center justify-center text-lime-300">
-              <HardDrive className="w-5 h-5" />
+              <CloudUpload className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg text-white font-heading">
-                Photo Sync &amp; Transfer Center
+                Publish &amp; Sync Photos Center
               </h3>
               <p className="text-xs text-stone-300">
-                Transfer photos between Preview and Published website · {currentHost}
+                Make your uploaded photos permanent and visible to all visitors on the published website
               </p>
             </div>
           </div>
@@ -248,7 +299,7 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 text-sm">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-sm">
           {/* Status Message */}
           {statusMessage && (
             <div className={`p-4 rounded-xl border flex items-start gap-3 ${
@@ -269,136 +320,183 @@ export const PhotoSyncModal: React.FC<PhotoSyncModalProps> = ({ isOpen, onClose 
             </div>
           )}
 
-          {/* Diagnosis Card */}
-          <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Globe className="w-4 h-4 text-emerald-800" />
-                <span>Current Environment:</span>
+          {/* DIAGNOSIS BANNER: Explain why preview had photos while published had 0 */}
+          <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4 text-xs text-amber-950 space-y-2">
+            <div className="flex items-center justify-between font-bold">
+              <span className="flex items-center gap-1.5 text-amber-900">
+                <Globe className="w-4 h-4 text-amber-700" />
+                <span>Diagnosis: Why photos didn't show on the published link</span>
               </span>
-              <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-stone-200 text-stone-700">
+              <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-amber-200">
                 {currentHost}
               </span>
             </div>
-
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-200">
-              <span className="text-stone-600">Photos in This Browser's Database:</span>
-              <span className="font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full">
-                {userUploadsCount} Uploaded Items
+            <p className="text-stone-700 text-[11px] leading-relaxed">
+              When photos are uploaded in a browser, modern web security stores them in that browser’s private storage (IndexedDB). A mobile phone or visitor visiting <strong>vrai-empowering-futures.ai.studio</strong> cannot see your computer’s private browser storage unless you click <strong>"Publish All Photos to Live Server"</strong> below.
+            </p>
+            <div className="flex items-center gap-4 pt-1 font-semibold text-[11px]">
+              <span className="text-emerald-900">
+                • Photos in this browser: <strong>{userUploadsCount} uploaded items</strong>
               </span>
-            </div>
-
-            <div className="text-[11px] text-stone-600 pt-1 leading-relaxed">
-              {userUploadsCount > 0 ? (
-                <p>
-                  ✅ You have <strong>{userUploadsCount} uploaded photos</strong> stored in this browser session. To make them appear on the published website, click <strong>"Export Photo Archive Package"</strong> below, then import that package on your published link.
-                </p>
-              ) : (
-                <p>
-                  ℹ️ This browser session currently has <strong>0 uploaded photos</strong>. If you uploaded photos in the AI Studio preview, open the preview, click <strong>"Export Photo Archive Package"</strong>, and upload the file here using <strong>"Import Photos Package"</strong>!
-                </p>
+              {serverPhotoCount > 0 && (
+                <span className="text-sky-900">
+                  • Server permanent photos: <strong>{serverPhotoCount} items live</strong>
+                </span>
               )}
             </div>
           </div>
 
-          {/* Action Grid: Export vs Import */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 1. Export Action */}
-            <div className="p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 flex flex-col justify-between space-y-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 text-emerald-950 font-bold">
-                  <Download className="w-4 h-4 text-emerald-700" />
-                  <h4>1. Export Photo Archive</h4>
-                </div>
-                <p className="text-xs text-stone-600 leading-relaxed">
-                  Downloads a complete backup package of all {userUploadsCount} uploaded photos, face framing coordinates, titles, and event tags into a single portable file.
-                </p>
+          {/* PRIMARY ONE-CLICK SERVER SYNC CARD */}
+          <div className="p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-950 text-white shadow-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-lime-400" />
+                <h4 className="font-bold text-sm text-lime-300">
+                  Step 1: Publish Photos to Live Server
+                </h4>
               </div>
-
-              {exportProgress && (
-                <p className="text-[11px] font-mono text-emerald-800 animate-pulse">
-                  {exportProgress}
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={handleExportPackage}
-                disabled={isExporting}
-                className="w-full py-2.5 px-4 bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isExporting ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Exporting Archive...</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-3.5 h-3.5 text-lime-300" />
-                    <span>Export {userUploadsCount} Photos Package</span>
-                  </>
-                )}
-              </button>
+              <span className="text-[11px] font-bold px-2 py-0.5 bg-lime-400/20 text-lime-300 rounded-full border border-lime-400/40">
+                Recommended
+              </span>
             </div>
 
-            {/* 2. Import Action */}
-            <div className="p-5 rounded-2xl border-2 border-stone-200 bg-white flex flex-col justify-between space-y-4 shadow-2xs">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 text-slate-900 font-bold">
-                  <Upload className="w-4 h-4 text-stone-700" />
-                  <h4>2. Import &amp; Restore Archive</h4>
+            <p className="text-xs text-stone-200 leading-relaxed">
+              Clicks one button to package all <strong>{userUploadsCount} uploaded photos</strong> and permanently commit them to the server. After this, any person opening your website on any mobile phone or computer will see every single photo immediately.
+            </p>
+
+            {syncProgress && (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between text-xs text-lime-300 font-mono">
+                  <span>{syncProgress}</span>
+                  {syncPercent > 0 && <span className="font-bold">{syncPercent}%</span>}
                 </div>
-                <p className="text-xs text-stone-600 leading-relaxed">
-                  Restore previously exported photo packages into this browser. Loads all photos directly into the website with full high-resolution rendering.
-                </p>
+                <div className="w-full bg-stone-900 rounded-full h-2.5 overflow-hidden border border-emerald-600/50">
+                  <div 
+                    className="bg-gradient-to-r from-lime-500 to-emerald-400 h-2.5 rounded-full transition-all duration-300 ease-out" 
+                    style={{ width: `${Math.max(5, syncPercent)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleDirectServerSync}
+              disabled={isSyncingToServer || userUploadsCount === 0}
+              className="w-full py-3 px-4 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-slate-950 rounded-xl font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isSyncingToServer ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                  <span>Publishing &amp; Saving to Live Server...</span>
+                </>
+              ) : (
+                <>
+                  <CloudUpload className="w-4 h-4 text-slate-950" />
+                  <span>🚀 Publish &amp; Save All {userUploadsCount} Photos to Live Server</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Secondary Action Grid: Export Archive & Import Archive */}
+          <div className="space-y-2">
+            <h5 className="font-bold text-xs text-stone-700 uppercase tracking-wider">
+              Step 2 (Optional): Backup Archive Package
+            </h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* 1. Export Action */}
+              <div className="p-4 rounded-xl border border-stone-200 bg-stone-50 flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-stone-900 font-bold text-xs">
+                    <Download className="w-4 h-4 text-emerald-700" />
+                    <span>Export Photo Archive (.json)</span>
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    Downloads a portable backup package of all {userUploadsCount} photos to keep on your computer.
+                  </p>
+                </div>
+
+                {exportProgress && (
+                  <p className="text-[10px] font-mono text-emerald-800 animate-pulse">
+                    {exportProgress}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleExportPackage}
+                  disabled={isExporting || userUploadsCount === 0}
+                  className="w-full py-2 px-3 bg-white hover:bg-stone-100 text-stone-800 border border-stone-300 rounded-lg font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  {isExporting ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Exporting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Export Archive File</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              {importProgress && (
-                <p className="text-[11px] font-mono text-stone-800 animate-pulse">
-                  {importProgress}
-                </p>
-              )}
+              {/* 2. Import Action */}
+              <div className="p-4 rounded-xl border border-stone-200 bg-white flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-stone-900 font-bold text-xs">
+                    <Upload className="w-4 h-4 text-stone-700" />
+                    <span>Import Archive to Server</span>
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    Restore a previously downloaded archive file. Automatically commits it to the server.
+                  </p>
+                </div>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json,application/json"
-                onChange={handleImportFile}
-                className="hidden"
-              />
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isImporting}
-                className="w-full py-2.5 px-4 bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isImporting ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Importing Archive...</span>
-                  </>
-                ) : (
-                  <>
-                    <FileCheck className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Select Archive to Import (.json)</span>
-                  </>
+                {importProgress && (
+                  <p className="text-[10px] font-mono text-stone-800 animate-pulse">
+                    {importProgress}
+                  </p>
                 )}
-              </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleImportFile}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                  className="w-full py-2 px-3 bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white rounded-lg font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  {isImporting ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Restoring...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileCheck className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Select .json Archive</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Built-in Permanent Visuals Guarantee */}
-          <div className="p-4 rounded-xl bg-white border border-stone-200 flex items-start gap-3 text-xs text-stone-700">
-            <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-bold text-slate-900">
-                16 Core Ministry &amp; School Visuals Committed Directly to Repository
-              </p>
-              <p className="text-stone-600 text-[11px] leading-relaxed">
-                All 16 official vector artworks for Sunday Worship, Altar Ministry, Women's Fellowship, Academic Convocation, Primary School Morning Assembly, Classrooms, Nutrition, Tailoring, Carpentry, and Solar Electrical are now bundled into the codebase so the published website never displays empty boxes or broken links for visitors.
-              </p>
-            </div>
+          <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 flex items-start gap-2.5 text-xs text-stone-700">
+            <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-stone-600 leading-relaxed">
+              <strong>Permanent Asset Protection:</strong> 16 official church and school vector graphics are built into the repository as permanent fallbacks so visitors never see broken image icons.
+            </p>
           </div>
         </div>
 

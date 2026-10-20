@@ -37,6 +37,9 @@ export function App() {
     isChurchEventUploadOpen,
     closeChurchEventUploadModal,
     churchEventDefaultType,
+    isPhotoSyncOpen,
+    closePhotoSyncModal,
+    openPhotoSyncModal,
   } = usePhotos();
 
   const [currentView, setCurrentView] = useState<NavView>('home');
@@ -242,6 +245,7 @@ export function App() {
         onOpenAssetGuide={() => setIsAssetGuideOpen(true)}
         onOpenDonateModal={() => handleOpenDonateModal('both')}
         onOpenLogoPreview={handleOpenLogoPreview}
+        onOpenPhotoSync={openPhotoSyncModal}
       />
 
       {/* Main Page Content */}
@@ -308,6 +312,12 @@ export function App() {
         isOpen={isChurchEventUploadOpen}
         onClose={closeChurchEventUploadModal}
         defaultEventType={churchEventDefaultType}
+      />
+
+      {/* Photo Sync & Transfer Center Modal */}
+      <PhotoSyncModal
+        isOpen={isPhotoSyncOpen}
+        onClose={closePhotoSyncModal}
       />
 
       {/* Floating 'Help a Child Today' Button from Design Screenshots */}

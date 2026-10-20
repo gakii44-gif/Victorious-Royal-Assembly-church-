@@ -11,6 +11,7 @@ import {
   createCompactThumbnail,
   generateVideoThumbnail 
 } from '../utils/mediaStorage';
+import initialServerPhotos from '../data/serverPhotos.json';
 
 export type GalleryCategory = 
   | 'victorious-heritage' 
@@ -71,6 +72,13 @@ export interface FocalAdjustTarget {
   aspectRatio?: '16:9' | '4:3' | '1:1' | '3:2' | '21:9';
 }
 
+export interface SyncProgress {
+  current: number;
+  total: number;
+  percent: number;
+  message: string;
+}
+
 interface PhotoContextType {
   // Slot-based single uploads (for hero banners, specific page cards)
   photos: Record<string, PhotoData>;
@@ -121,6 +129,14 @@ interface PhotoContextType {
   focalAdjustTarget: FocalAdjustTarget | null;
   openFocalAdjustModal: (target: FocalAdjustTarget) => void;
   closeFocalAdjustModal: () => void;
+
+  // Photo Transfer & Sync Center Modal
+  isPhotoSyncOpen: boolean;
+  openPhotoSyncModal: () => void;
+  closePhotoSyncModal: () => void;
+  syncAllPhotosToServer: (onProgress?: (progress: SyncProgress) => void) => Promise<{ success: boolean; count: number; error?: string }>;
+  isSyncingToServer: boolean;
+  serverPhotoCount: number;
 
   // Storage hydration state
   isStorageReady: boolean;
@@ -760,6 +776,27 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           console.warn('Orphan recovery check skipped:', recoverErr);
         }
 
+        // Server-Persisted Photos Hydration (Permanent Cross-Device Storage)
+        try {
+          let serverGallery: GalleryPhotoItem[] = (initialServerPhotos as any)?.galleryPhotos || [];
+          const srvRes = await fetch('/api/photos').catch(() => null);
+          if (srvRes && srvRes.ok) {
+            const srvData = await srvRes.json();
+            if (Array.isArray(srvData.galleryPhotos) && srvData.galleryPhotos.length > 0) {
+              serverGallery = srvData.galleryPhotos;
+            }
+          }
+          if (serverGallery.length > 0) {
+            const currentIds = new Set(hydratedGallery.map(p => p.id));
+            const newServerItems = serverGallery.filter(p => !currentIds.has(p.id));
+            if (newServerItems.length > 0) {
+              hydratedGallery.unshift(...newServerItems);
+            }
+          }
+        } catch (srvErr) {
+          console.warn('Server photos check skipped:', srvErr);
+        }
+
         if (!isCancelled) {
           setGalleryPhotos(hydratedGallery);
           // Persist the consolidated list back to IndexedDB metadata
@@ -839,6 +876,16 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         } catch {}
 
+        // Merge server slots
+        try {
+          const srvSlots = (initialServerPhotos as any)?.slotPhotos || {};
+          for (const [sKey, sVal] of Object.entries(srvSlots)) {
+            if (!hydratedSlots[sKey] || !hydratedSlots[sKey].url || hydratedSlots[sKey].url.startsWith('blob:')) {
+              hydratedSlots[sKey] = sVal as PhotoData;
+            }
+          }
+        } catch {}
+
         if (!isCancelled) {
           setPhotos(hydratedSlots);
           await saveSlotPhotosToIDB(hydratedSlots);
@@ -864,6 +911,214 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Multi-upload modal state
   const [isMultiUploadOpen, setIsMultiUploadOpen] = useState(false);
   const [multiUploadDefaultCategory, setMultiUploadDefaultCategory] = useState<GalleryCategory>('life-at-heritage');
+
+  // Photo Transfer & Sync modal state
+  const [isPhotoSyncOpen, setIsPhotoSyncOpen] = useState(false);
+  const openPhotoSyncModal = () => setIsPhotoSyncOpen(true);
+  const closePhotoSyncModal = () => setIsPhotoSyncOpen(false);
+
+  // Server sync state
+  const [isSyncingToServer, setIsSyncingToServer] = useState(false);
+  const [serverPhotoCount, setServerPhotoCount] = useState(0);
+
+  // Helper: Optimizes an image blob to max 1920px dimensions and 0.85 JPEG quality
+  // This shrinks a 10MB phone camera photo to ~250KB, preventing browser memory errors and Cloud Run payload limits
+  const optimizeBlobForUpload = async (blob: Blob): Promise<{ base64: string; type: string }> => {
+    if (blob.type.startsWith('video/') || blob.type === 'image/svg+xml') {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      return { base64, type: blob.type };
+    }
+
+    return new Promise<{ base64: string; type: string }>((resolve) => {
+      const img = new Image();
+      const objUrl = URL.createObjectURL(blob);
+      img.onload = () => {
+        URL.revokeObjectURL(objUrl);
+        const maxDim = 1920;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          resolve({ base64: dataUrl, type: 'image/jpeg' });
+        } else {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve({ base64: reader.result as string, type: blob.type });
+          reader.readAsDataURL(blob);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        const reader = new FileReader();
+        reader.onloadend = () => resolve({ base64: reader.result as string, type: blob.type });
+        reader.readAsDataURL(blob);
+      };
+      img.src = objUrl;
+    });
+  };
+
+  // Push all local IndexedDB photos to permanent server storage in small, resilient batches
+  const syncAllPhotosToServer = async (
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<{ success: boolean; count: number; error?: string }> => {
+    try {
+      setIsSyncingToServer(true);
+
+      const userGalleryItems = galleryPhotos.filter(
+        (p) => p.isUserUploaded || p.url.startsWith('blob:') || p.url.startsWith('data:')
+      );
+
+      type SyncQueueItem = {
+        id: string;
+        type: 'gallery' | 'slot';
+        slotKey?: string;
+        data: any;
+      };
+
+      const queue: SyncQueueItem[] = [];
+
+      for (const item of userGalleryItems) {
+        queue.push({
+          id: item.id,
+          type: 'gallery',
+          data: item,
+        });
+      }
+
+      for (const [slotKey, slotData] of Object.entries(photos)) {
+        queue.push({
+          id: `slot-${slotKey}`,
+          type: 'slot',
+          slotKey,
+          data: slotData,
+        });
+      }
+
+      const totalItems = queue.length;
+      if (totalItems === 0) {
+        return { success: true, count: 0 };
+      }
+
+      if (onProgress) {
+        onProgress({
+          current: 0,
+          total: totalItems,
+          percent: 0,
+          message: `Preparing ${totalItems} photos for live upload...`,
+        });
+      }
+
+      // Batch 2 photos per chunk (~500KB total) to stay well within Cloud Run / Nginx request limits
+      const CHUNK_SIZE = 2;
+      let processedCount = 0;
+
+      for (let i = 0; i < queue.length; i += CHUNK_SIZE) {
+        const slice = queue.slice(i, i + CHUNK_SIZE);
+        const chunkPayload: any[] = [];
+
+        for (const qItem of slice) {
+          try {
+            const blobKey = qItem.type === 'slot' ? `slot-${qItem.slotKey}` : qItem.id;
+            const blob = await getMediaFile(blobKey);
+            let base64 = '';
+            let mimeType = 'image/jpeg';
+
+            if (blob) {
+              const opt = await optimizeBlobForUpload(blob);
+              base64 = opt.base64;
+              mimeType = opt.type;
+            } else if (qItem.data.url && (qItem.data.url.startsWith('data:') || qItem.data.url.startsWith('blob:'))) {
+              try {
+                const res = await fetch(qItem.data.url);
+                const fetchedBlob = await res.blob();
+                const opt = await optimizeBlobForUpload(fetchedBlob);
+                base64 = opt.base64;
+                mimeType = opt.type;
+              } catch {}
+            }
+
+            chunkPayload.push({
+              id: qItem.id,
+              type: qItem.type,
+              slotKey: qItem.slotKey,
+              data: qItem.data,
+              base64,
+              mimeType,
+            });
+          } catch (itemPrepErr) {
+            console.warn(`Could not prepare item ${qItem.id}:`, itemPrepErr);
+          }
+        }
+
+        // Send chunk to server
+        const res = await fetch('/api/photos/sync-chunk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: chunkPayload }),
+        });
+
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson.error || `Server responded with status ${res.status}`);
+        }
+
+        processedCount += slice.length;
+        const currentNum = Math.min(processedCount, totalItems);
+        const percent = Math.min(100, Math.round((currentNum / totalItems) * 100));
+
+        if (onProgress) {
+          onProgress({
+            current: currentNum,
+            total: totalItems,
+            percent,
+            message: `Uploaded photo ${currentNum} of ${totalItems} (${percent}%)...`,
+          });
+        }
+      }
+
+      // Refresh latest photos from server
+      const refreshed = await fetch('/api/photos').then((r) => r.json()).catch(() => null);
+      if (refreshed && Array.isArray(refreshed.galleryPhotos) && refreshed.galleryPhotos.length > 0) {
+        setGalleryPhotos(refreshed.galleryPhotos);
+        await saveGalleryItemsToIDB(refreshed.galleryPhotos);
+        setServerPhotoCount(refreshed.galleryPhotos.length);
+      }
+      if (refreshed && refreshed.slotPhotos && Object.keys(refreshed.slotPhotos).length > 0) {
+        setPhotos(refreshed.slotPhotos);
+        await saveSlotPhotosToIDB(refreshed.slotPhotos);
+      }
+
+      return { 
+        success: true, 
+        count: totalItems 
+      };
+    } catch (err: any) {
+      console.error('syncAllPhotosToServer failed:', err);
+      return { success: false, count: 0, error: err?.message || 'Sync failed' };
+    } finally {
+      setIsSyncingToServer(false);
+    }
+  };
 
   // Sync slots to IndexedDB and safe lightweight localStorage
   useEffect(() => {
@@ -1301,6 +1556,12 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         focalAdjustTarget,
         openFocalAdjustModal,
         closeFocalAdjustModal,
+        isPhotoSyncOpen,
+        openPhotoSyncModal,
+        closePhotoSyncModal,
+        syncAllPhotosToServer,
+        isSyncingToServer,
+        serverPhotoCount,
         isStorageReady,
         churchLogoUrl,
         schoolLogoUrl,

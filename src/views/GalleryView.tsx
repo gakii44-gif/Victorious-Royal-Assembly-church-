@@ -32,7 +32,8 @@ import {
   SlidersHorizontal,
   Maximize2,
   HeartHandshake,
-  Move
+  Move,
+  HardDrive
 } from 'lucide-react';
 import { VRAILogo } from '../components/VRAILogo';
 import { LifeAtHeritageGallerySection } from '../components/LifeAtHeritageGallerySection';
@@ -56,7 +57,8 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
     updateGalleryPhoto, 
     resetDefaultGalleryPhotos,
     openChurchEventUploadModal,
-    openFocalAdjustModal
+    openFocalAdjustModal,
+    openPhotoSyncModal
   } = usePhotos();
 
   // Active Section filter ('all' or one of the 6 specific sections)
@@ -283,6 +285,14 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
 
             {/* Direct Multi Upload Trigger */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                onClick={openPhotoSyncModal}
+                className="px-4 py-3 bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 hover:scale-[1.02]"
+                title="Make all uploaded photos permanent and visible on the published website"
+              >
+                <HardDrive className="w-4 h-4 text-emerald-950" />
+                <span>🚀 Publish to Live Site</span>
+              </button>
               <button
                 onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
                 className="px-5 py-3 bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2.5 hover:scale-[1.02]"

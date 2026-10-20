@@ -117,11 +117,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <>
                 <button
                   onClick={onOpenPhotoSync}
-                  className="bg-emerald-800/80 hover:bg-emerald-700 text-lime-300 hover:text-white font-bold px-2 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all border border-lime-400/30 shadow-xs"
-                  title="Transfer or backup photos between preview and published website"
+                  className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all shadow-xs"
+                  title="Make uploaded photos permanent and visible on published link and mobile devices"
                 >
-                  <HardDrive className="w-3 h-3 text-lime-400" />
-                  <span>Sync / Transfer</span>
+                  <HardDrive className="w-3 h-3 text-emerald-950" />
+                  <span>🚀 Publish to Live Site</span>
                 </button>
                 <span aria-hidden="true">·</span>
               </>
@@ -354,6 +354,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Camera className="w-3.5 h-3.5 text-emerald-700" />
               <span>Upload Photos ({uploadedCount} Photos)</span>
             </button>
+            {onOpenPhotoSync && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenPhotoSync();
+                }}
+                className="text-left px-3 py-2 text-xs text-slate-950 bg-lime-400 hover:bg-lime-300 rounded font-extrabold flex items-center gap-1.5 mt-1 shadow-xs"
+              >
+                <HardDrive className="w-3.5 h-3.5 text-emerald-950" />
+                <span>🚀 Publish Photos to Live Site ({uploadedCount} Photos)</span>
+              </button>
+            )}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
