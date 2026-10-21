@@ -140,6 +140,7 @@ interface PhotoContextType {
 
   // Storage hydration state
   isStorageReady: boolean;
+  diagnoseImageUrls: () => Promise<void>;
 
   // Dedicated Official Church & School Logo Management
   churchLogoUrl: string;
@@ -1677,6 +1678,60 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsSchoolLogoCustom(false);
   };
 
+  const diagnoseImageUrls = async () => {
+    console.group('🔍 VRAI Image Diagnostic Utility');
+    console.log('Checking all registered gallery and slot image URLs...');
+
+    const urlsToCheck: { label: string; url: string }[] = [];
+
+    // 1. Logos
+    urlsToCheck.push({ label: 'Church Logo', url: churchLogoUrl });
+    urlsToCheck.push({ label: 'School Logo', url: schoolLogoUrl });
+
+    // 2. Slot Photos
+    for (const [key, val] of Object.entries(photos)) {
+      if (val?.url) {
+        urlsToCheck.push({ label: `Slot [${key}]`, url: val.url });
+      }
+    }
+
+    // 3. Gallery Photos
+    for (const item of galleryPhotos) {
+      if (item?.url) {
+        urlsToCheck.push({ label: `Gallery [${item.id} - ${item.title}]`, url: item.url });
+      }
+    }
+
+    console.log(`Total URLs to inspect: ${urlsToCheck.length}`);
+
+    for (const item of urlsToCheck) {
+      if (item.url.startsWith('blob:') || item.url.startsWith('data:')) {
+        console.log(`%c[LOCAL BLOB/DATA] ${item.label}: ${item.url.substring(0, 40)}...`, 'color: #3b82f6');
+        continue;
+      }
+
+      try {
+        const response = await fetch(item.url, { method: 'HEAD', mode: 'no-cors' }).catch(() => null);
+        // Since no-cors returns opaque, let's also do a standard fetch with mode 'cors' or 'get'
+        const fullRes = await fetch(item.url).catch((err) => ({ ok: false, status: err.message }));
+        
+        if (typeof fullRes === 'object' && 'ok' in fullRes) {
+          if (fullRes.ok) {
+            console.log(`%c[OK 200] ${item.label} (${item.url})`, 'color: #10b981; font-weight: bold;');
+          } else {
+            console.warn(`%c[ERROR ${fullRes.status}] ${item.label} (${item.url})`, 'color: #ef4444; font-weight: bold;');
+          }
+        } else {
+          console.log(`%c[CHECKED] ${item.label} (${item.url})`, 'color: #8b5cf6');
+        }
+      } catch (err: any) {
+        console.error(`%c[FAILED FETCH] ${item.label} (${item.url}) -> ${err?.message}`, 'color: #ef4444;');
+      }
+    }
+
+    console.groupEnd();
+  };
+
   return (
     <PhotoContext.Provider
       value={{
@@ -1725,6 +1780,7 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isSchoolLogoCustom,
         isEditorMode,
         setIsEditorMode,
+        diagnoseImageUrls,
       }}
     >
       {children}
