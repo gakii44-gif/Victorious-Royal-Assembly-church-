@@ -35,6 +35,7 @@ import { usePhotos, GalleryCategory } from '../context/PhotoContext';
 import { EveryChildLearnsSection } from '../components/EveryChildLearnsSection';
 import { LifeAtHeritageGallerySection } from '../components/LifeAtHeritageGallerySection';
 import { ThreePillarsSection } from '../components/ThreePillarsSection';
+import { MonthlyImpactSection } from '../components/MonthlyImpactSection';
 
 interface HomeViewProps {
   onNavigate: (view: NavView) => void;
@@ -127,83 +128,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Right 5 Cols: Dedicated Space for Real Photograph or Beautiful Brand Emblem */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center">
-              {heroPhoto ? (
-                <div className="relative w-full aspect-video sm:aspect-square rounded-2xl overflow-hidden shadow-2xl border border-stone-700 group">
-                  <img
-                    src={heroPhoto.url}
-                    alt={heroPhoto.alt || 'Victorious Royal Assembly International Hero Photograph'}
-                    className="w-full h-full object-cover transition-all duration-300"
-                    style={{
-                      objectPosition: `${heroPhoto.focalPoint?.x ?? 50}% ${heroPhoto.focalPoint?.y ?? 50}%`,
-                      transform: heroPhoto.zoom && heroPhoto.zoom !== 1 ? `scale(${heroPhoto.zoom})` : undefined,
-                      transformOrigin: `${heroPhoto.focalPoint?.x ?? 50}% ${heroPhoto.focalPoint?.y ?? 50}%`,
-                    }}
-                  />
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openFocalAdjustModal({
-                          type: 'slot',
-                          keyOrId: hero.photoSlotKey,
-                          url: heroPhoto.url,
-                          title: 'Homepage Hero Banner Photograph',
-                          focalPoint: heroPhoto.focalPoint || { x: 50, y: 50 },
-                          zoom: heroPhoto.zoom || 1.0,
-                          aspectRatio: '16:9',
-                        })
-                      }
-                      className="bg-black/75 hover:bg-black text-white text-xs font-semibold px-2.5 py-1 rounded backdrop-blur-xs flex items-center gap-1.5 shadow-md border border-white/20"
-                      title="Adjust photo framing & drag face to center in box"
-                    >
-                      <Move className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Fit Box</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openUploadModal(hero.photoSlotKey, 'Hero Banner Photograph')}
-                      className="bg-emerald-800/90 hover:bg-emerald-800 text-white text-xs font-semibold px-2.5 py-1 rounded backdrop-blur-xs flex items-center gap-1.5 shadow-md"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-lime-400" />
-                      <span>Change Photo</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Elegant Green-and-White Design with Subtle Patterns & Church Logo */
-                <div className="relative p-8 rounded-2xl bg-white/95 text-slate-900 shadow-2xl border border-emerald-200/80 max-w-sm w-full flex flex-col items-center text-center backdrop-blur-sm">
-                  <div className="w-44 h-44 sm:w-52 sm:h-52 mb-4">
-                    <VRAILogo size="100%" className="w-full h-full" />
-                  </div>
-
-                  <h2 className="text-base font-bold text-slate-900 font-heading">
-                    Victorious Royal Assembly
-                  </h2>
-                  <p className="text-xs text-emerald-800 font-semibold mt-0.5">
-                    {organizationData.tagline}
-                  </p>
-                  <p className="text-[11px] text-stone-500 mt-2 leading-relaxed">
-                    Juba, Central Equatoria State · Republic of South Sudan
-                  </p>
-
-                  <div className="mt-4 pt-3 border-t border-stone-200 w-full flex flex-col gap-2 items-center justify-center">
-                    <button
-                      onClick={() => openUploadModal(hero.photoSlotKey, 'Homepage Hero Banner Photograph')}
-                      className="w-full justify-center px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-200"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-emerald-700" />
-                      <span>Upload Real Church Photo Here</span>
-                    </button>
-                    <button
-                      onClick={() => onOpenLogoPreview?.('both')}
-                      className="w-full justify-center px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-md transition-colors flex items-center gap-1.5 border border-amber-200"
-                    >
-                      <Shield className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Inspect Church &amp; School Official Crests</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+              <PlaceholderImage
+                slotKey={hero.photoSlotKey}
+                src={heroPhoto?.url || hero.photoPlaceholderPath}
+                alt={heroPhoto?.alt || 'Victorious Royal Assembly International Sanctuary & Altar'}
+                label="Homepage Hero Banner Photograph"
+                aspectRatio="16:9"
+                category="church"
+                className="w-full shadow-2xl border border-stone-700 rounded-2xl"
+              />
             </div>
           </div>
         </div>
@@ -1025,7 +958,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <span>Official Church Channels &amp; Broadcasts</span>
             </div>
             <h3 className="text-lg sm:text-xl font-bold font-heading text-white">
-              Watch Services &amp; School Highlights on TikTok and Facebook
+              Watch Services &amp; School Highlights on YouTube, TikTok and Facebook
             </h3>
             <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
               Connect with Victorious Royal Assembly International live from Juba, South Sudan. Contact lines: <strong className="text-white font-mono">+211 925 332 626</strong> / <strong className="text-white font-mono">+211 929 522 922</strong>.
@@ -1033,6 +966,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {socialLinks.youtube && (
+              <a
+                href={socialLinks.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                <span>YouTube (@victoriousroyaltv3141)</span>
+              </a>
+            )}
+
             <a
               href={socialLinks.facebook}
               target="_blank"
@@ -1059,6 +1006,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* SECTION I: MONTHLY REGIONAL IMPACT & EDUCATION PROGRESS */}
+      <MonthlyImpactSection 
+        onOpenDonateModal={onOpenDonateModal} 
+        onNavigate={onNavigate} 
+      />
 
       {/* SECTION J: CALL TO ACTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">

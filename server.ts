@@ -333,6 +333,91 @@ async function startServer() {
     }
   });
 
+  // 5. POST /api/photos/upload-logo: Upload and permanently persist church or school logo
+  app.post('/api/photos/upload-logo', async (req: Request, res: Response) => {
+    try {
+      const { type = 'church', base64, mimeType = 'image/png' } = req.body;
+      if (!base64) {
+        return res.status(400).json({ error: 'Missing logo base64 image data' });
+      }
+
+      const match = base64.match(/^data:([^;]+);base64,(.+)$/);
+      const rawBase64 = match ? match[2] : base64;
+      const detectedMime = match ? match[1] : mimeType;
+
+      let ext = 'png';
+      if (detectedMime.includes('svg')) ext = 'svg';
+      else if (detectedMime.includes('webp')) ext = 'webp';
+      else if (detectedMime.includes('jpeg') || detectedMime.includes('jpg')) ext = 'jpg';
+
+      const fileBaseName = `${type}-logo.${ext}`;
+      const destPath = path.resolve(uploadsDir, fileBaseName);
+      fs.writeFileSync(destPath, Buffer.from(rawBase64, 'base64'));
+
+      // Also ensure public/assets/logo has a permanent copy for repository bundling
+      const logoAssetsDir = path.resolve(__dirname, 'public/assets/logo');
+      if (!fs.existsSync(logoAssetsDir)) fs.mkdirSync(logoAssetsDir, { recursive: true });
+      fs.writeFileSync(path.resolve(logoAssetsDir, fileBaseName), Buffer.from(rawBase64, 'base64'));
+
+      const permanentUrl = `/uploads/${fileBaseName}`;
+
+      // Update serverPhotos.json
+      let currentData: any = { churchLogoUrl: null, schoolLogoUrl: null, galleryPhotos: [], slotPhotos: {} };
+      if (fs.existsSync(photosJsonPath)) {
+        try {
+          currentData = JSON.parse(fs.readFileSync(photosJsonPath, 'utf-8'));
+        } catch {}
+      }
+
+      if (type === 'church') {
+        currentData.churchLogoUrl = permanentUrl;
+      } else {
+        currentData.schoolLogoUrl = permanentUrl;
+      }
+      currentData.lastUpdated = new Date().toISOString();
+
+      fs.writeFileSync(photosJsonPath, JSON.stringify(currentData, null, 2));
+
+      return res.json({
+        success: true,
+        url: permanentUrl,
+        type,
+        message: `${type === 'church' ? 'Church Logo' : 'School Logo'} permanently saved and published!`
+      });
+    } catch (err: any) {
+      console.error('Logo upload error:', err);
+      return res.status(500).json({ error: err?.message || 'Logo upload failed' });
+    }
+  });
+
+  // 6. POST /api/photos/reset-logo: Reset to default official logo
+  app.post('/api/photos/reset-logo', async (req: Request, res: Response) => {
+    try {
+      const { type = 'church' } = req.body;
+      let currentData: any = { churchLogoUrl: null, schoolLogoUrl: null, galleryPhotos: [], slotPhotos: {} };
+      if (fs.existsSync(photosJsonPath)) {
+        try {
+          currentData = JSON.parse(fs.readFileSync(photosJsonPath, 'utf-8'));
+        } catch {}
+      }
+
+      if (type === 'church') {
+        currentData.churchLogoUrl = null;
+      } else {
+        currentData.schoolLogoUrl = null;
+      }
+      currentData.lastUpdated = new Date().toISOString();
+
+      fs.writeFileSync(photosJsonPath, JSON.stringify(currentData, null, 2));
+
+      const defaultUrl = type === 'church' ? '/vrai-church-logo.svg' : '/victorious-heritage-school-logo.svg';
+      return res.json({ success: true, url: defaultUrl, type });
+    } catch (err: any) {
+      console.error('Logo reset error:', err);
+      return res.status(500).json({ error: err?.message || 'Logo reset failed' });
+    }
+  });
+
   // Serve static uploads
   app.use('/uploads', express.static(uploadsDir));
 

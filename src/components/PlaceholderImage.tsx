@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Camera, 
   BookOpen, 
@@ -39,25 +39,13 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
   onOpenAssetGuide,
 }) => {
   const { getPhoto, openUploadModal, removePhoto, openFocalAdjustModal } = usePhotos();
-  const [fileLoadFailed, setFileLoadFailed] = useState(false);
+  const [candidateIndex, setCandidateIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const cleanSrc = (s?: string | null) => {
-    if (!s) return null;
-    const trimmed = s.trim();
-    if (!trimmed) return null;
-    if (trimmed.endsWith('.jpg')) {
-      return trimmed.replace(/\.jpg$/i, '.svg');
-    }
-    return trimmed;
-  };
-
-  // Check if user uploaded a photo via PhotoContext or have bundled fallback
+  // Check if user uploaded a photo via PhotoContext
   const uploaded = slotKey ? getPhoto(slotKey) : null;
-  const validUploaded = uploaded?.url && uploaded.url.trim() !== '' ? cleanSrc(uploaded.url) : null;
-  const validPropSrc = src && src.trim() !== '' && !fileLoadFailed ? cleanSrc(src) : null;
 
-  // Category fallback to ensure every slot displays a real image when opened from GitHub
+  // Category fallback to ensure every slot displays a real image
   const categoryDefault = 
     category === 'school' ? '/assets/schools/heritage-academy/morning-assembly.svg' :
     category === 'vocational' ? '/assets/vocational/tailoring.svg' :
@@ -65,7 +53,49 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
     category === 'outreach' ? '/assets/church/outreach/convocation-ceremony.svg' :
     '/assets/church/services/hero-church.svg';
 
-  const activeSrc = validUploaded || validPropSrc || categoryDefault;
+  // Build ordered list of candidate image URLs to try
+  const candidates = useMemo(() => {
+    const list: string[] = [];
+    
+    // 1. Uploaded slot photo if available
+    if (uploaded?.url && typeof uploaded.url === 'string') {
+      const cleanUploaded = uploaded.url.trim();
+      if (cleanUploaded) list.push(cleanUploaded);
+    }
+    
+    // 2. Prop `src`
+    if (src && typeof src === 'string') {
+      const cleanSrc = src.trim();
+      if (cleanSrc && !list.includes(cleanSrc)) list.push(cleanSrc);
+    }
+    
+    // 3. Recommended path
+    if (recommendedPath && typeof recommendedPath === 'string') {
+      const cleanRec = recommendedPath.trim();
+      if (cleanRec && !list.includes(cleanRec)) list.push(cleanRec);
+    }
+    
+    // 4. Category-specific verified SVG
+    if (!list.includes(categoryDefault)) {
+      list.push(categoryDefault);
+    }
+    
+    // 5. Ultimate fallback asset
+    const ultimateFallback = '/assets/church/services/hero-church.svg';
+    if (!list.includes(ultimateFallback)) {
+      list.push(ultimateFallback);
+    }
+    
+    return list;
+  }, [uploaded?.url, src, recommendedPath, categoryDefault]);
+
+  // Reset candidate index when candidate list changes (e.g. new upload or slot change)
+  useEffect(() => {
+    setCandidateIndex(0);
+    setImageLoaded(false);
+  }, [uploaded?.url, src, recommendedPath]);
+
+  const activeSrc = candidates[candidateIndex] || categoryDefault;
 
   const aspectClass = {
     '16:9': 'aspect-video',
@@ -79,24 +109,29 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
   const focalY = uploaded?.focalPoint?.y ?? 50;
   const zoom = uploaded?.zoom ?? 1.0;
 
-  // Render the image with object-position & scale transform so faces are centered!
+  const handleImageError = () => {
+    if (candidateIndex < candidates.length - 1) {
+      // Step to next candidate fallback URL
+      setCandidateIndex((prev) => prev + 1);
+    } else {
+      // Even if all fail, mark loaded so we show the fallback card without infinite pulse
+      setImageLoaded(true);
+    }
+  };
+
   return (
     <div className={`relative group overflow-hidden rounded-xl bg-stone-900 ${aspectClass} ${className}`}>
       <img
-        key={activeSrc}
+        key={`${activeSrc}-${candidateIndex}`}
         src={activeSrc}
         alt={uploaded?.alt || alt}
         referrerPolicy="no-referrer"
+        loading="lazy"
+        decoding="async"
         onLoad={() => setImageLoaded(true)}
-        onError={() => {
-          if (!fileLoadFailed) {
-            setFileLoadFailed(true);
-          } else {
-            setImageLoaded(true);
-          }
-        }}
-        className={`w-full h-full object-cover transition-all duration-300 ${
-          imageLoaded ? 'opacity-100' : 'opacity-90'
+        onError={handleImageError}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
+          imageLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
           objectPosition: `${focalX}% ${focalY}%`,
@@ -104,9 +139,14 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
           transformOrigin: `${focalX}% ${focalY}%`,
         }}
       />
+
+      {/* Loading Shimmer State */}
       {!imageLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-stone-900 animate-pulse text-stone-500">
-          <ImageIcon className="w-6 h-6" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900/90 text-amber-500/70 p-4 text-center">
+          <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin mb-2" />
+          <span className="text-[11px] font-medium text-stone-400 tracking-wide uppercase">
+            Loading Photograph...
+          </span>
         </div>
       )}
 

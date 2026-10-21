@@ -1,8 +1,9 @@
 import React from 'react';
 import { VRAILogo } from './VRAILogo';
 import { NavView } from './Navbar';
-import { MapPin, Mail, Phone, ExternalLink, ShieldCheck, HeartHandshake, Compass, Shield } from 'lucide-react';
+import { MapPin, Mail, Phone, ExternalLink, ShieldCheck, HeartHandshake, Compass, Shield, Lock } from 'lucide-react';
 import { organizationData } from '../data/organizationData';
+import { usePhotos } from '../context/PhotoContext';
 
 interface FooterProps {
   onNavigate: (view: NavView) => void;
@@ -17,6 +18,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenDonateModal,
   onOpenLogoPreview,
 }) => {
+  const { isEditorMode, setIsEditorMode } = usePhotos();
   const handleNav = (view: NavView) => {
     onNavigate(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -75,7 +77,20 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="space-y-2 text-xs text-stone-300 pt-2">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>{organizationData.location.compoundDescription}</span>
+                {organizationData.location.googleMapsUrl ? (
+                  <a
+                    href={organizationData.location.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white underline decoration-emerald-500/50 transition-colors"
+                    title="Open Church Compound on Google Maps"
+                  >
+                    <span>{organizationData.location.compoundDescription}</span>
+                    <span className="ml-1 text-[10px] text-emerald-400 font-bold">📍 Open Maps</span>
+                  </a>
+                ) : (
+                  <span>{organizationData.location.compoundDescription}</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -88,7 +103,22 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
 
             {/* Social Media Links */}
-            <div className="flex items-center gap-3 pt-3">
+            <div className="flex flex-wrap items-center gap-2.5 pt-3">
+              {organizationData.socialLinks.youtube && (
+                <a
+                  href={organizationData.socialLinks.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-stone-800 hover:bg-red-700 text-stone-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors border border-stone-700"
+                  title="Follow Victorious Royal Assembly International on YouTube (@victoriousroyaltv3141)"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  <span>YouTube</span>
+                </a>
+              )}
+
               <a
                 href={organizationData.socialLinks.facebook}
                 target="_blank"
@@ -247,6 +277,15 @@ export const Footer: React.FC<FooterProps> = ({
           </p>
           <div className="flex flex-wrap items-center gap-4 text-stone-400">
             <span>{organizationData.legalStatusNotice}</span>
+            <span aria-hidden="true">·</span>
+            <button
+              onClick={() => setIsEditorMode(!isEditorMode)}
+              className="text-stone-500 hover:text-stone-300 transition-colors flex items-center gap-1 font-mono text-[11px]"
+              title="Toggle Staff Photo & Content Management Mode"
+            >
+              <Lock className="w-3 h-3 text-stone-500" />
+              <span>{isEditorMode ? 'Exit Staff Editor' : 'Staff Access'}</span>
+            </button>
           </div>
         </div>
       </div>

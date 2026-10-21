@@ -150,6 +150,10 @@ interface PhotoContextType {
   resetSchoolLogo: () => void;
   isChurchLogoCustom: boolean;
   isSchoolLogoCustom: boolean;
+
+  // Staff / Public mode separation
+  isEditorMode: boolean;
+  setIsEditorMode: (val: boolean) => void;
 }
 
 const PhotoContext = createContext<PhotoContextType | undefined>(undefined);
@@ -670,11 +674,42 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isStorageReady, setIsStorageReady] = useState(false);
   const activeObjectUrls = useRef<Set<string>>(new Set());
 
-  // Logo management state
-  const [churchLogoUrl, setChurchLogoUrl] = useState<string>(DEFAULT_CHURCH_LOGO_URL);
-  const [schoolLogoUrl, setSchoolLogoUrl] = useState<string>(DEFAULT_SCHOOL_LOGO_URL);
-  const [isChurchLogoCustom, setIsChurchLogoCustom] = useState(false);
-  const [isSchoolLogoCustom, setIsSchoolLogoCustom] = useState(false);
+  // Logo management state - defaults to server persistence if configured
+  const [churchLogoUrl, setChurchLogoUrl] = useState<string>(
+    (initialServerPhotos as any)?.churchLogoUrl || DEFAULT_CHURCH_LOGO_URL
+  );
+  const [schoolLogoUrl, setSchoolLogoUrl] = useState<string>(
+    (initialServerPhotos as any)?.schoolLogoUrl || DEFAULT_SCHOOL_LOGO_URL
+  );
+  const [isChurchLogoCustom, setIsChurchLogoCustom] = useState(
+    Boolean((initialServerPhotos as any)?.churchLogoUrl)
+  );
+  const [isSchoolLogoCustom, setIsSchoolLogoCustom] = useState(
+    Boolean((initialServerPhotos as any)?.schoolLogoUrl)
+  );
+
+  // Staff / Public mode separation
+  const [isEditorMode, setIsEditorModeState] = useState<boolean>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('edit') === 'true' || window.location.hash === '#editor') {
+          return true;
+        }
+        return localStorage.getItem('vrai_editor_mode') === 'true';
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  });
+
+  const setIsEditorMode = (val: boolean) => {
+    setIsEditorModeState(val);
+    try {
+      localStorage.setItem('vrai_editor_mode', val ? 'true' : 'false');
+    } catch {}
+  };
 
   // Helper to safely track created object URLs
   const createTrackedUrl = (blob: Blob): string => {
@@ -825,11 +860,30 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 url: freshUrl,
                 videoUrl: slotData.mediaType === 'video' ? freshUrl : undefined,
               };
+            } else if (slotData.url && slotData.url.startsWith('blob:')) {
+              // Dead blob from previous session; replace with verified fallback
+              const fallback = DEFAULT_SLOT_FALLBACKS[slotKey];
+              if (fallback) {
+                hydratedSlots[slotKey] = {
+                  ...slotData,
+                  url: fallback.url,
+                };
+              }
             } else {
               hydratedSlots[slotKey] = slotData;
             }
           } catch {
-            hydratedSlots[slotKey] = slotData;
+            if (slotData.url && slotData.url.startsWith('blob:')) {
+              const fallback = DEFAULT_SLOT_FALLBACKS[slotKey];
+              if (fallback) {
+                hydratedSlots[slotKey] = {
+                  ...slotData,
+                  url: fallback.url,
+                };
+              }
+            } else {
+              hydratedSlots[slotKey] = slotData;
+            }
           }
         }
 
@@ -857,24 +911,43 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         } catch {}
 
-        // D. Hydrate Custom Church and School Logos if uploaded
+        // D. Hydrate Custom Church and School Logos (Server First, IDB Override)
         try {
+          let serverChurchLogo = (initialServerPhotos as any)?.churchLogoUrl;
+          let serverSchoolLogo = (initialServerPhotos as any)?.schoolLogoUrl;
+
+          const srvRes = await fetch('/api/photos').catch(() => null);
+          if (srvRes && srvRes.ok) {
+            const srvData = await srvRes.json();
+            if (srvData.churchLogoUrl) serverChurchLogo = srvData.churchLogoUrl;
+            if (srvData.schoolLogoUrl) serverSchoolLogo = srvData.schoolLogoUrl;
+          }
+
+          if (serverChurchLogo && !isCancelled) {
+            setChurchLogoUrl(serverChurchLogo);
+            setIsChurchLogoCustom(true);
+          }
+          if (serverSchoolLogo && !isCancelled) {
+            setSchoolLogoUrl(serverSchoolLogo);
+            setIsSchoolLogoCustom(true);
+          }
+
           const churchBlob = await getMediaFile('media_church_logo');
           if (churchBlob && !isCancelled) {
             const url = createTrackedUrl(churchBlob);
             setChurchLogoUrl(url);
             setIsChurchLogoCustom(true);
           }
-        } catch {}
 
-        try {
           const schoolBlob = await getMediaFile('media_school_logo');
           if (schoolBlob && !isCancelled) {
             const url = createTrackedUrl(schoolBlob);
             setSchoolLogoUrl(url);
             setIsSchoolLogoCustom(true);
           }
-        } catch {}
+        } catch (logoHydrateErr) {
+          console.warn('Logo hydration fallback:', logoHydrateErr);
+        }
 
         // Merge server slots
         try {
@@ -1219,9 +1292,14 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const getPhoto = (slotKey: string): PhotoData | null => {
-    // 1. If user uploaded a custom photo, return it
-    if (photos[slotKey] && photos[slotKey].url && photos[slotKey].url.trim() !== '') {
-      return photos[slotKey];
+    // 1. If user uploaded a custom photo, return it if valid (and not a dead blob from previous session)
+    const custom = photos[slotKey];
+    if (custom && custom.url && custom.url.trim() !== '') {
+      if (custom.url.startsWith('blob:') && !activeObjectUrls.current.has(custom.url)) {
+        // Expired blob from prior session; skip to bundled fallback
+      } else {
+        return custom;
+      }
     }
     // 2. Exact match in bundled repository assets
     if (DEFAULT_SLOT_FALLBACKS[slotKey]) {
@@ -1486,31 +1564,100 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const uploadChurchLogo = async (file: File): Promise<string> => {
+    // 1. Convert to base64 for persistent server delivery
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // 2. Save locally to IndexedDB for instant preview
     await saveMediaFile('media_church_logo', file);
-    const url = createTrackedUrl(file);
-    setChurchLogoUrl(url);
+    const localUrl = createTrackedUrl(file);
+    setChurchLogoUrl(localUrl);
     setIsChurchLogoCustom(true);
     try {
       localStorage.setItem(STORAGE_KEY_CHURCH_LOGO, 'true');
     } catch {}
-    return url;
+
+    // 3. Post to server to save permanent file into /uploads/ & update serverPhotos.json
+    try {
+      const res = await fetch('/api/photos/upload-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'church',
+          base64,
+          mimeType: file.type || 'image/png',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setChurchLogoUrl(data.url);
+          return data.url;
+        }
+      }
+    } catch (netErr) {
+      console.warn('Server logo sync pending or offline:', netErr);
+    }
+
+    return localUrl;
   };
 
   const uploadSchoolLogo = async (file: File): Promise<string> => {
+    // 1. Convert to base64 for persistent server delivery
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // 2. Save locally to IndexedDB for instant preview
     await saveMediaFile('media_school_logo', file);
-    const url = createTrackedUrl(file);
-    setSchoolLogoUrl(url);
+    const localUrl = createTrackedUrl(file);
+    setSchoolLogoUrl(localUrl);
     setIsSchoolLogoCustom(true);
     try {
       localStorage.setItem(STORAGE_KEY_SCHOOL_LOGO, 'true');
     } catch {}
-    return url;
+
+    // 3. Post to server to save permanent file into /uploads/ & update serverPhotos.json
+    try {
+      const res = await fetch('/api/photos/upload-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'school',
+          base64,
+          mimeType: file.type || 'image/png',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setSchoolLogoUrl(data.url);
+          return data.url;
+        }
+      }
+    } catch (netErr) {
+      console.warn('Server school logo sync pending or offline:', netErr);
+    }
+
+    return localUrl;
   };
 
   const resetChurchLogo = async () => {
     try {
       await deleteMediaFile('media_church_logo');
       localStorage.removeItem(STORAGE_KEY_CHURCH_LOGO);
+      await fetch('/api/photos/reset-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'church' }),
+      }).catch(() => null);
     } catch {}
     setChurchLogoUrl(DEFAULT_CHURCH_LOGO_URL);
     setIsChurchLogoCustom(false);
@@ -1520,6 +1667,11 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       await deleteMediaFile('media_school_logo');
       localStorage.removeItem(STORAGE_KEY_SCHOOL_LOGO);
+      await fetch('/api/photos/reset-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'school' }),
+      }).catch(() => null);
     } catch {}
     setSchoolLogoUrl(DEFAULT_SCHOOL_LOGO_URL);
     setIsSchoolLogoCustom(false);
@@ -1571,6 +1723,8 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         resetSchoolLogo,
         isChurchLogoCustom,
         isSchoolLogoCustom,
+        isEditorMode,
+        setIsEditorMode,
       }}
     >
       {children}

@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false);
-  const { photos, openMultiUploadModal, galleryPhotos, schoolLogoUrl } = usePhotos();
+  const { photos, openMultiUploadModal, galleryPhotos, schoolLogoUrl, isEditorMode, setIsEditorMode } = usePhotos();
   const uploadedCount = Object.keys(photos).length + galleryPhotos.filter(p => p.isUserUploaded).length;
 
   const navLinks: { label: string; view: NavView; isSchool?: boolean }[] = [
@@ -69,14 +69,42 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2">
             <span className="font-semibold text-white tracking-wide">VICTORIOUS ROYAL ASSEMBLY INTERNATIONAL</span>
             <span className="text-emerald-600" aria-hidden="true">·</span>
-            <span className="text-emerald-300">Juba, South Sudan</span>
+            {organizationData.location.googleMapsUrl ? (
+              <a
+                href={organizationData.location.googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-300 hover:text-white underline decoration-emerald-500/50 flex items-center gap-1 transition-colors"
+                title="Open Church Location on Google Maps"
+              >
+                <span>Juba, South Sudan</span>
+                <span className="text-[10px] text-emerald-400">📍</span>
+              </a>
+            ) : (
+              <span className="text-emerald-300">Juba, South Sudan</span>
+            )}
             <span className="hidden md:inline text-emerald-600" aria-hidden="true">·</span>
             <span className="hidden md:inline text-stone-400 font-mono text-[11px]">+211 925 332 626</span>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4 text-[11px] text-stone-300">
-            {/* Social Media Links from Flier */}
+            {/* Social Media Links from Flier & Official Channels */}
             <div className="flex items-center gap-2 pr-2 border-r border-emerald-800/80">
+              {organizationData.socialLinks.youtube && (
+                <a
+                  href={organizationData.socialLinks.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white text-red-400 font-semibold flex items-center gap-1 transition-colors"
+                  title="Follow Victorious Royal Assembly International on YouTube (@victoriousroyaltv3141)"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  <span className="hidden lg:inline">YouTube</span>
+                </a>
+              )}
+
               <a
                 href={organizationData.socialLinks.facebook}
                 target="_blank"
@@ -104,44 +132,57 @@ export const Navbar: React.FC<NavbarProps> = ({
               </a>
             </div>
 
-            <button
-              onClick={() => openMultiUploadModal()}
-              className="text-lime-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"
-              title="Upload your real church or school photos directly"
-            >
-              <Camera className="w-3.5 h-3.5 text-lime-400" />
-              <span>Upload Photos ({uploadedCount})</span>
-            </button>
-            <span aria-hidden="true">·</span>
-            {onOpenPhotoSync && (
-              <>
+            {isEditorMode ? (
+              <div className="flex items-center gap-2">
+                <span className="bg-amber-400 text-slate-950 font-bold px-2 py-0.5 rounded text-[10px] uppercase">
+                  Staff Editor Active
+                </span>
                 <button
-                  onClick={onOpenPhotoSync}
-                  className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all shadow-xs"
-                  title="Make uploaded photos permanent and visible on published link and mobile devices"
+                  onClick={() => setIsEditorMode(false)}
+                  className="text-stone-300 hover:text-white underline text-[11px]"
+                  title="Return to clean visitor view"
                 >
-                  <HardDrive className="w-3 h-3 text-emerald-950" />
-                  <span>🚀 Publish to Live Site</span>
+                  Exit
                 </button>
                 <span aria-hidden="true">·</span>
-              </>
+                <button
+                  onClick={() => openMultiUploadModal()}
+                  className="text-lime-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"
+                  title="Upload your real church or school photos directly"
+                >
+                  <Camera className="w-3.5 h-3.5 text-lime-400" />
+                  <span>Upload Photos ({uploadedCount})</span>
+                </button>
+                {onOpenPhotoSync && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <button
+                      onClick={onOpenPhotoSync}
+                      className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all shadow-xs"
+                      title="Make uploaded photos permanent and visible on published link and mobile devices"
+                    >
+                      <HardDrive className="w-3 h-3 text-emerald-950" />
+                      <span>🚀 Publish to Live Site</span>
+                    </button>
+                  </>
+                )}
+                <span aria-hidden="true">·</span>
+                <button
+                  onClick={() => onOpenLogoPreview?.('both')}
+                  className="text-amber-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"
+                  title="Preview Official Church and School Logos"
+                >
+                  <Shield className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Official Logos</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-stone-300">
+                <span className="text-emerald-300 font-medium">Sunday Service: 8:30 AM</span>
+                <span aria-hidden="true" className="text-emerald-700">·</span>
+                <span className="text-stone-300">Midweek: Wed 5:00 PM</span>
+              </div>
             )}
-            <button
-              onClick={() => onOpenLogoPreview?.('both')}
-              className="text-amber-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"
-              title="Preview Official Church and School Logos"
-            >
-              <Shield className="w-3.5 h-3.5 text-amber-400" />
-              <span>Official Logos</span>
-            </button>
-            <span aria-hidden="true">·</span>
-            <button
-              onClick={onOpenAssetGuide}
-              className="text-stone-300 hover:text-white font-medium flex items-center gap-1 transition-colors"
-            >
-              <Compass className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Asset Guide</span>
-            </button>
           </div>
         </div>
       </div>
@@ -344,42 +385,59 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Support Our Mission</span>
               <HeartHandshake className="w-4 h-4 text-emerald-300" />
             </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                openMultiUploadModal();
-              }}
-              className="text-left px-3 py-2 text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded font-bold flex items-center gap-1.5 mt-2"
-            >
-              <Camera className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Upload Photos ({uploadedCount} Photos)</span>
-            </button>
-            {onOpenPhotoSync && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenPhotoSync();
-                }}
-                className="text-left px-3 py-2 text-xs text-slate-950 bg-lime-400 hover:bg-lime-300 rounded font-extrabold flex items-center gap-1.5 mt-1 shadow-xs"
-              >
-                <HardDrive className="w-3.5 h-3.5 text-emerald-950" />
-                <span>🚀 Publish Photos to Live Site ({uploadedCount} Photos)</span>
-              </button>
+            {isEditorMode && (
+              <>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openMultiUploadModal();
+                  }}
+                  className="text-left px-3 py-2 text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded font-bold flex items-center gap-1.5 mt-2"
+                >
+                  <Camera className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Upload Photos ({uploadedCount} Photos)</span>
+                </button>
+                {onOpenPhotoSync && (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenPhotoSync();
+                    }}
+                    className="text-left px-3 py-2 text-xs text-slate-950 bg-lime-400 hover:bg-lime-300 rounded font-extrabold flex items-center gap-1.5 mt-1 shadow-xs"
+                  >
+                    <HardDrive className="w-3.5 h-3.5 text-emerald-950" />
+                    <span>🚀 Publish Photos to Live Site ({uploadedCount} Photos)</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenLogoPreview?.('both');
+                  }}
+                  className="text-left px-3 py-2 text-xs text-amber-900 bg-amber-50 hover:bg-amber-100 rounded font-bold flex items-center gap-1.5 mt-1"
+                >
+                  <Shield className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Preview Official Logos &amp; Crests</span>
+                </button>
+              </>
             )}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenLogoPreview?.('both');
-              }}
-              className="text-left px-3 py-2 text-xs text-amber-900 bg-amber-50 hover:bg-amber-100 rounded font-bold flex items-center gap-1.5 mt-1"
-            >
-              <Shield className="w-3.5 h-3.5 text-amber-700" />
-              <span>Preview Official Logos &amp; Crests</span>
-            </button>
 
             {/* Social Links in Mobile Menu */}
             <div className="pt-3 border-t border-stone-200 mt-2 space-y-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 px-3">Connect With Us</p>
+              {organizationData.socialLinks.youtube && (
+                <a
+                  href={organizationData.socialLinks.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-red-700 hover:bg-red-50 rounded"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  <span className="font-semibold">YouTube: @victoriousroyaltv3141</span>
+                </a>
+              )}
               <a
                 href={organizationData.socialLinks.facebook}
                 target="_blank"
@@ -402,6 +460,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </svg>
                 <span className="font-semibold">TikTok: @victorious.royal4</span>
               </a>
+              {organizationData.location.googleMapsUrl && (
+                <a
+                  href={organizationData.location.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-emerald-800 hover:bg-emerald-50 rounded"
+                >
+                  <span className="text-base">📍</span>
+                  <span className="font-semibold">Find Us on Google Maps (Tongping, Juba)</span>
+                </a>
+              )}
             </div>
 
             <button

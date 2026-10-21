@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavView } from '../components/Navbar';
 import { organizationData } from '../data/organizationData';
 import { usePhotos, GalleryCategory, GalleryPhotoItem } from '../context/PhotoContext';
@@ -58,7 +58,9 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
     resetDefaultGalleryPhotos,
     openChurchEventUploadModal,
     openFocalAdjustModal,
-    openPhotoSyncModal
+    openPhotoSyncModal,
+    isEditorMode,
+    setIsEditorMode,
   } = usePhotos();
 
   // Active Section filter ('all' or one of the 6 specific sections)
@@ -71,6 +73,14 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
   
   // Track which video is currently playing inline inside a card preview
   const [inlineVideoPlayingId, setInlineVideoPlayingId] = useState<string | null>(null);
+
+  // Pagination & performance optimization: load 24 items initially to guarantee fast initial render
+  const [visibleCount, setVisibleCount] = useState<number>(24);
+
+  // Reset pagination when filter tabs change
+  useEffect(() => {
+    setVisibleCount(24);
+  }, [activeTab, eventSubFilter, mediaFilter]);
 
   // The 5 Exact Sections requested by the user
   const sections: { 
@@ -564,7 +574,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredPhotos.map((item) => {
+            {filteredPhotos.slice(0, visibleCount).map((item) => {
               const meta = getSectionMeta(item.category);
               const isUserItem = item.isUserUploaded;
               const isVideo = item.mediaType === 'video';
@@ -613,6 +623,8 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                         <img
                           src={item.url}
                           alt={item.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
                           style={{
                             objectPosition: `${focalX}% ${focalY}%`,
@@ -645,29 +657,31 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                           </div>
                         )}
 
-                        {/* Top-Right Quick Fit Box Button on Card Hover */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openFocalAdjustModal({
-                                type: 'gallery',
-                                keyOrId: item.id,
-                                url: item.url,
-                                title: item.title,
-                                focalPoint: item.focalPoint || { x: 50, y: 50 },
-                                zoom: item.zoom || 1.0,
-                                aspectRatio: '4:3',
-                              });
-                            }}
-                            className="bg-black/80 hover:bg-black text-white text-[10px] font-semibold px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1 shadow-sm border border-white/20"
-                            title="Adjust framing & drag face to fit box"
-                          >
-                            <Move className="w-3 h-3 text-amber-300" />
-                            <span>Fit Box</span>
-                          </button>
-                        </div>
+                        {/* Top-Right Quick Fit Box Button on Card Hover (Staff Editor Only) */}
+                        {isEditorMode && (
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openFocalAdjustModal({
+                                  type: 'gallery',
+                                  keyOrId: item.id,
+                                  url: item.url,
+                                  title: item.title,
+                                  focalPoint: item.focalPoint || { x: 50, y: 50 },
+                                  zoom: item.zoom || 1.0,
+                                  aspectRatio: '4:3',
+                                });
+                              }}
+                              className="bg-black/80 hover:bg-black text-white text-[10px] font-semibold px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1 shadow-sm border border-white/20"
+                              title="Adjust framing & drag face to fit box"
+                            >
+                              <Move className="w-3 h-3 text-amber-300" />
+                              <span>Fit Box</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -738,84 +752,120 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                       </p>
                     </div>
 
-                    {/* ACTION INTERFACE: FIT BOX, REPLACE, DELETE, QUICK MOVE & PREVIEW */}
-                    <div className="space-y-2 pt-2 border-t border-stone-100">
-                      
-                      {/* Top Row: Quick Move Section Dropdown */}
-                      <div className="flex items-center justify-between text-[10px] text-stone-500 bg-stone-50 p-1.5 rounded-lg border border-stone-200/80">
-                        <span className="font-semibold text-stone-600 pl-1 shrink-0">Section:</span>
-                        <select
-                          value={item.category === 'heritage' ? 'victorious-heritage' : item.category}
-                          onChange={(e) => {
-                            const newCategory = e.target.value as GalleryCategory;
-                            updateGalleryPhoto(item.id, { category: newCategory });
-                          }}
-                          className="bg-white border border-stone-200 rounded px-1.5 py-0.5 font-bold text-slate-900 focus:outline-hidden text-[10px] cursor-pointer max-w-[170px] truncate"
-                          title="Move this item to another section"
-                        >
-                          <option value="victorious-heritage">Victorious Heritage</option>
-                          <option value="church">Church</option>
-                          <option value="church-events">Church Events (Weddings &amp; Anniversaries)</option>
-                          <option value="women">Women</option>
-                          <option value="vocational">Vocational</option>
-                          <option value="life-at-heritage">Life at Victorious Heritage</option>
-                        </select>
-                      </div>
-
-                      {/* Bottom Row: Controls */}
-                      <div className="flex items-center justify-between gap-1 pt-0.5">
-                        <div className="flex items-center gap-1.5">
-                          {/* Fit Box / Drag Face Button */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openFocalAdjustModal({
-                                type: 'gallery',
-                                keyOrId: item.id,
-                                url: item.url,
-                                title: item.title,
-                                focalPoint: item.focalPoint || { x: 50, y: 50 },
-                                zoom: item.zoom || 1.0,
-                                aspectRatio: '4:3',
-                              });
+                    {/* PUBLIC VS STAFF INTERFACE */}
+                    {isEditorMode ? (
+                      /* STAFF ACTION INTERFACE: FIT BOX, REPLACE, DELETE, QUICK MOVE */
+                      <div className="space-y-2 pt-2 border-t border-stone-100">
+                        {/* Top Row: Quick Move Section Dropdown */}
+                        <div className="flex items-center justify-between text-[10px] text-stone-500 bg-stone-50 p-1.5 rounded-lg border border-stone-200/80">
+                          <span className="font-semibold text-stone-600 pl-1 shrink-0">Section:</span>
+                          <select
+                            value={item.category === 'heritage' ? 'victorious-heritage' : item.category}
+                            onChange={(e) => {
+                              const newCategory = e.target.value as GalleryCategory;
+                              updateGalleryPhoto(item.id, { category: newCategory });
                             }}
-                            className="px-2 py-1.5 text-stone-700 hover:text-amber-900 bg-stone-100 hover:bg-amber-50 border border-stone-200 hover:border-amber-300 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1"
-                            title="Drag to fit box & position face squarely in view"
+                            className="bg-white border border-stone-200 rounded px-1.5 py-0.5 font-bold text-slate-900 focus:outline-hidden text-[10px] cursor-pointer max-w-[170px] truncate"
+                            title="Move this item to another section"
                           >
-                            <Move className="w-3 h-3 text-amber-600" />
-                            <span>Fit Box</span>
-                          </button>
-
-                          {/* Replace Button */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setReplaceModalItem(item);
-                            }}
-                            className="px-2.5 py-1.5 text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1.5"
-                            title="Replace this media or swap with new upload"
-                          >
-                            <RefreshCw className="w-3 h-3 text-emerald-700" />
-                            <span>Replace</span>
-                          </button>
-
-                          {/* Delete Button */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteConfirmItem(item);
-                            }}
-                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
-                            title={`Delete ${isVideo ? 'video' : 'photo'} from gallery`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                            <option value="victorious-heritage">Victorious Heritage</option>
+                            <option value="church">Church</option>
+                            <option value="church-events">Church Events (Weddings &amp; Anniversaries)</option>
+                            <option value="women">Women</option>
+                            <option value="vocational">Vocational</option>
+                            <option value="life-at-heritage">Life at Victorious Heritage</option>
+                          </select>
                         </div>
 
-                        {/* View or Preview Button */}
+                        {/* Bottom Row: Controls */}
+                        <div className="flex items-center justify-between gap-1 pt-0.5">
+                          <div className="flex items-center gap-1.5">
+                            {/* Fit Box / Drag Face Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openFocalAdjustModal({
+                                  type: 'gallery',
+                                  keyOrId: item.id,
+                                  url: item.url,
+                                  title: item.title,
+                                  focalPoint: item.focalPoint || { x: 50, y: 50 },
+                                  zoom: item.zoom || 1.0,
+                                  aspectRatio: '4:3',
+                                });
+                              }}
+                              className="px-2 py-1.5 text-stone-700 hover:text-amber-900 bg-stone-100 hover:bg-amber-50 border border-stone-200 hover:border-amber-300 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1"
+                              title="Drag to fit box & position face squarely in view"
+                            >
+                              <Move className="w-3 h-3 text-amber-600" />
+                              <span>Fit Box</span>
+                            </button>
+
+                            {/* Replace Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReplaceModalItem(item);
+                              }}
+                              className="px-2.5 py-1.5 text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1.5"
+                              title="Replace this media or swap with new upload"
+                            >
+                              <RefreshCw className="w-3 h-3 text-emerald-700" />
+                              <span>Replace</span>
+                            </button>
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteConfirmItem(item);
+                              }}
+                              className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+                              title={`Delete ${isVideo ? 'video' : 'photo'} from gallery`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Preview Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isVideo && item.videoUrl) {
+                                setInlineVideoPlayingId(inlineVideoPlayingId === item.id ? null : item.id);
+                              } else {
+                                setActiveLightboxPhoto(item);
+                              }
+                            }}
+                            className="px-2.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg font-bold text-xs transition-colors flex items-center gap-1 shrink-0"
+                          >
+                            {isVideo ? (
+                              isInlinePlaying ? (
+                                <>
+                                  <Pause className="w-3 h-3 text-amber-300" />
+                                  <span>Pause</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="w-3 h-3 text-amber-300 fill-current" />
+                                  <span>Preview</span>
+                                </>
+                              )
+                            ) : (
+                              <>
+                                <span>View</span>
+                                <ArrowRight className="w-3 h-3 text-stone-400" />
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* CLEAN PUBLIC VISITOR & DONOR INTERFACE */
+                      <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
                         <button
                           type="button"
                           onClick={() => {
@@ -825,34 +875,40 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                               setActiveLightboxPhoto(item);
                             }
                           }}
-                          className="px-2.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg font-bold text-xs transition-colors flex items-center gap-1 shrink-0"
+                          className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1.5 transition-colors"
                         >
-                          {isVideo ? (
-                            isInlinePlaying ? (
-                              <>
-                                <Pause className="w-3 h-3 text-amber-300" />
-                                <span>Pause</span>
-                              </>
-                            ) : (
-                              <>
-                                <Play className="w-3 h-3 text-amber-300 fill-current" />
-                                <span>Preview</span>
-                              </>
-                            )
-                          ) : (
-                            <>
-                              <span>View</span>
-                              <ArrowRight className="w-3 h-3 text-stone-400" />
-                            </>
-                          )}
+                          <Maximize2 className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>{isVideo ? 'Play Video Clip' : 'View Full Image'}</span>
                         </button>
+                        <span className="text-[10px] text-stone-400 font-mono">
+                          {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : 'Verified Archive'}
+                        </span>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Pagination Controls */}
+          {filteredPhotos.length > visibleCount && (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6 pb-2">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 24)}
+                className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2"
+              >
+                <span>Load More Media ({filteredPhotos.length - visibleCount} more)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setVisibleCount(filteredPhotos.length)}
+                className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-semibold transition-all border border-stone-200"
+              >
+                <span>Show All ({filteredPhotos.length})</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Empty State */}

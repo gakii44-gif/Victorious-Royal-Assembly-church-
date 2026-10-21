@@ -154,10 +154,12 @@ export interface OrganizationData {
     district?: string;
     compoundDescription: string;
     directions?: string;
+    googleMapsUrl?: string;
   };
   socialLinks: {
     facebook: string;
     tiktok: string;
+    youtube?: string;
   };
   hero: {
     headline: string;
@@ -298,11 +300,13 @@ export const organizationData: OrganizationData = {
     district: "Tongping",
     compoundDescription: "Tongping (Former Nilepet Road), Juba, South Sudan",
     directions: "Tongping, Former Nilepet Road, Juba, Central Equatoria State, Republic of South Sudan",
+    googleMapsUrl: "https://maps.app.goo.gl/G7yv5XqLqfpW55EX8?g_st=ac",
   },
 
   socialLinks: {
     facebook: "https://www.facebook.com/share/19ZywCQkPt/",
     tiktok: "https://www.tiktok.com/@victorious.royal4?_r=1&_t=ZS-9AZvd6ASlCn",
+    youtube: "https://youtube.com/@victoriousroyaltv3141?feature=shared",
   },
 
   hero: {
