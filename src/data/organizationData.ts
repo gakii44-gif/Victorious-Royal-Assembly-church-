@@ -678,8 +678,8 @@ export const organizationData: OrganizationData = {
   },
 
   contact: {
-    emailPlaceholder: "info@vraisouthsudan.org",
-    donorLiaisonEmailPlaceholder: "partnerships@vraisouthsudan.org",
+    emailPlaceholder: "andyisreal05@yahoo.com",
+    donorLiaisonEmailPlaceholder: "andyisreal05@yahoo.com",
     phone: "+211 (0) 925 332 626",
     phoneSecondary: "+211 (0) 929 522 922",
     phoneAlternate: "+211 (0) 922 221 179",

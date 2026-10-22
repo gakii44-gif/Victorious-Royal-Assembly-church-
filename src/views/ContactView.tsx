@@ -141,12 +141,12 @@ export const ContactView: React.FC<ContactViewProps> = ({
                   </div>
                   <div>
                     <strong className="text-slate-900 block text-xs">Email Correspondence:</strong>
-                    <p className="text-stone-600 mt-0.5 font-mono select-all">
+                    <a
+                      href={`mailto:${organizationData.contact.emailPlaceholder}`}
+                      className="text-emerald-800 hover:text-emerald-950 hover:underline mt-0.5 font-mono select-all text-sm block font-medium"
+                    >
                       {organizationData.contact.emailPlaceholder}
-                    </p>
-                    <p className="text-emerald-800 mt-1 font-mono font-semibold select-all text-[11px]">
-                      {organizationData.contact.donorLiaisonEmailPlaceholder}
-                    </p>
+                    </a>
                   </div>
                 </div>
               </div>

@@ -129,25 +129,13 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
         loading="eager"
         onLoad={() => setImageLoaded(true)}
         onError={handleImageError}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${
-          imageLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="w-full h-full object-cover"
         style={{
           objectPosition: `${focalX}% ${focalY}%`,
           transform: zoom !== 1 ? `scale(${zoom})` : undefined,
           transformOrigin: `${focalX}% ${focalY}%`,
         }}
       />
-
-      {/* Loading Shimmer State */}
-      {!imageLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900/90 text-amber-500/70 p-4 text-center">
-          <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin mb-2" />
-          <span className="text-[11px] font-medium text-stone-400 tracking-wide uppercase">
-            Loading Photograph...
-          </span>
-        </div>
-      )}
 
       {/* Interactive Controls Overlay (Adjust Face / Drag, Replace, Delete) */}
       {slotKey && (

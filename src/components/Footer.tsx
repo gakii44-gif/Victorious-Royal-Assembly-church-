@@ -94,7 +94,12 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="select-all">{organizationData.contact.donorLiaisonEmailPlaceholder}</span>
+                <a
+                  href={`mailto:${organizationData.contact.donorLiaisonEmailPlaceholder}`}
+                  className="hover:text-emerald-300 transition-colors select-all"
+                >
+                  {organizationData.contact.donorLiaisonEmailPlaceholder}
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
