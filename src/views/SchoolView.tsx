@@ -395,7 +395,7 @@ export const SchoolView: React.FC<SchoolViewProps> = ({
             {/* Quote Banner */}
             <div className="p-6 rounded-2xl bg-emerald-950/80 border border-emerald-700/60 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
               <img 
-                src="/victorious-heritage-school-logo.svg" 
+                src={schoolLogoUrl || '/uploads/school-logo.jpg'} 
                 alt="School crest" 
                 className="w-16 h-16 object-contain shrink-0 drop-shadow" 
               />

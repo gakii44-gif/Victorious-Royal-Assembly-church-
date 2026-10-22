@@ -1,6 +1,6 @@
 {
-  "churchLogoUrl": null,
-  "schoolLogoUrl": null,
+  "churchLogoUrl": "/uploads/church-logo.jpg",
+  "schoolLogoUrl": "/uploads/school-logo.jpg",
   "galleryPhotos": [
     {
       "id": "upload-1792421535497-pe9ckp-0",

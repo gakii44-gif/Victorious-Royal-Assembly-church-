@@ -164,8 +164,8 @@ const STORAGE_KEY_GALLERY = 'vrai_church_gallery_photos';
 const STORAGE_KEY_CHURCH_LOGO = 'vrai_church_custom_logo_key';
 const STORAGE_KEY_SCHOOL_LOGO = 'vrai_school_custom_logo_key';
 
-const DEFAULT_CHURCH_LOGO_URL = '/vrai-church-logo.svg';
-const DEFAULT_SCHOOL_LOGO_URL = '/victorious-heritage-school-logo.svg';
+const DEFAULT_CHURCH_LOGO_URL = '/uploads/church-logo.jpg';
+const DEFAULT_SCHOOL_LOGO_URL = '/uploads/school-logo.jpg';
 
 // Default slot fallbacks committed directly into the repository
 export const DEFAULT_SLOT_FALLBACKS: Record<string, PhotoData> = {

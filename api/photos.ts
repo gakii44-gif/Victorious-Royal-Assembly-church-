@@ -12,8 +12,8 @@ export default function handler(req: any, res: any) {
   }
 
   return res.status(200).json(serverPhotosData || {
-    churchLogoUrl: null,
-    schoolLogoUrl: null,
+    churchLogoUrl: '/uploads/church-logo.jpg',
+    schoolLogoUrl: '/uploads/school-logo.jpg',
     galleryPhotos: [],
     slotPhotos: {},
   });

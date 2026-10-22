@@ -16,7 +16,7 @@ export const VRAILogo: React.FC<VRAILogoProps> = ({
   wordmarkClassName = '',
   customSrc,
 }) => {
-  let churchLogo = '/vrai-church-logo.svg';
+  let churchLogo = '/uploads/church-logo.jpg';
   try {
     const photoCtx = usePhotos();
     if (photoCtx?.churchLogoUrl) {
