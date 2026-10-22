@@ -734,7 +734,7 @@ export const SchoolView: React.FC<SchoolViewProps> = ({
                         src={item.url}
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                        loading="lazy"
+                        loading="eager"
                       />
                     )}
 

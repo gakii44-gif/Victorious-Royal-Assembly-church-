@@ -623,8 +623,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                         <img
                           src={item.url}
                           alt={item.title}
-                          loading="lazy"
-                          decoding="async"
+                          loading="eager"
                           className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
                           style={{
                             objectPosition: `${focalX}% ${focalY}%`,

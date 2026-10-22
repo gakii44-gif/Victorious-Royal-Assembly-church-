@@ -126,8 +126,7 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
         src={activeSrc}
         alt={uploaded?.alt || alt}
         referrerPolicy="no-referrer"
-        loading="lazy"
-        decoding="async"
+        loading="eager"
         onLoad={() => setImageLoaded(true)}
         onError={handleImageError}
         className={`w-full h-full object-cover transition-opacity duration-300 ${

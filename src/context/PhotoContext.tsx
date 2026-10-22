@@ -632,6 +632,7 @@ const DEFAULT_GALLERY_PHOTOS: GalleryPhotoItem[] = [
 export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Slot photos (for hero & specific components)
   const [photos, setPhotos] = useState<Record<string, PhotoData>>(() => {
+    const srvSlots: Record<string, PhotoData> = (initialServerPhotos as any)?.slotPhotos || {};
     try {
       const saved = localStorage.getItem(STORAGE_KEY_SLOTS);
       if (saved) {
@@ -639,36 +640,58 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const valid: Record<string, PhotoData> = {};
         for (const [k, v] of Object.entries(parsed || {})) {
           const item = v as PhotoData;
+          // If the cached item has a dead blob, discard it and use the server permanent URL
           if (item && typeof item === 'object' && item.url && item.url.trim() !== '') {
-            valid[k] = item;
+            if (item.url.startsWith('blob:') && srvSlots[k]?.url) {
+              valid[k] = srvSlots[k];
+            } else if (!item.url.startsWith('blob:')) {
+              valid[k] = item;
+            }
           }
+        }
+        // Merge any server slots that were missing from local storage
+        for (const [k, v] of Object.entries(srvSlots)) {
+          if (!valid[k]) valid[k] = v;
         }
         return valid;
       }
-      return {};
+      return srvSlots;
     } catch (e) {
-      return {};
+      return srvSlots;
     }
   });
 
-  // Gallery photos & videos
+  // Gallery photos & videos (130 permanent photos from church archive)
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhotoItem[]>(() => {
+    const srvGallery: GalleryPhotoItem[] = (initialServerPhotos as any)?.galleryPhotos;
+    const defaultList = (Array.isArray(srvGallery) && srvGallery.length > 0) ? srvGallery : DEFAULT_GALLERY_PHOTOS;
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY_GALLERY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((item) => {
-            if (!item.url || item.url.trim() === '') {
-              return { ...item, url: '/assets/schools/heritage-academy/morning-assembly.svg' };
+          // If saved has fewer items than our server list or has dead blobs, merge with server
+          const srvIds = new Set(defaultList.map((p) => p.id));
+          const cleaned = parsed.map((item) => {
+            if (item.url && item.url.startsWith('blob:')) {
+              const matchingSrv = defaultList.find((p) => p.id === item.id);
+              if (matchingSrv) return matchingSrv;
             }
             return item;
           });
+          const localIds = new Set(cleaned.map((p) => p.id));
+          for (const srvItem of defaultList) {
+            if (!localIds.has(srvItem.id)) {
+              cleaned.push(srvItem);
+            }
+          }
+          return cleaned;
         }
       }
-      return DEFAULT_GALLERY_PHOTOS;
+      return defaultList;
     } catch (e) {
-      return DEFAULT_GALLERY_PHOTOS;
+      return defaultList;
     }
   });
 
@@ -1124,11 +1147,15 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             } else if (qItem.data.url && (qItem.data.url.startsWith('data:') || qItem.data.url.startsWith('blob:'))) {
               try {
                 const res = await fetch(qItem.data.url);
-                const fetchedBlob = await res.blob();
-                const opt = await optimizeBlobForUpload(fetchedBlob);
-                base64 = opt.base64;
-                mimeType = opt.type;
-              } catch {}
+                if (res.ok) {
+                  const fetchedBlob = await res.blob();
+                  const opt = await optimizeBlobForUpload(fetchedBlob);
+                  base64 = opt.base64;
+                  mimeType = opt.type;
+                }
+              } catch (fetchErr) {
+                console.warn(`Could not fetch blob URL ${qItem.data.url}:`, fetchErr);
+              }
             }
 
             chunkPayload.push({
@@ -1302,7 +1329,12 @@ export const PhotoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return custom;
       }
     }
-    // 2. Exact match in bundled repository assets
+    // 2. Exact match in server-persisted slot photos archive
+    const serverSlot = (initialServerPhotos as any)?.slotPhotos?.[slotKey];
+    if (serverSlot && serverSlot.url && serverSlot.url.trim() !== '') {
+      return serverSlot;
+    }
+    // 3. Exact match in bundled repository assets
     if (DEFAULT_SLOT_FALLBACKS[slotKey]) {
       return DEFAULT_SLOT_FALLBACKS[slotKey];
     }

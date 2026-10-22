@@ -879,6 +879,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                             <img
                               src={item.url}
                               alt={item.title}
+                              loading="eager"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               style={{
                                 objectPosition: `${focalX}% ${focalY}%`,

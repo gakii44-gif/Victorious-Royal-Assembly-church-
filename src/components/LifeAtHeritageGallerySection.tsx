@@ -140,6 +140,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
           <img
             src={photo.url}
             alt={photo.alt || item.alt}
+            loading="eager"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
             style={{
               objectPosition: `${photo.focalPoint?.x ?? 50}% ${photo.focalPoint?.y ?? 50}%`,
@@ -419,6 +420,7 @@ export const LifeAtHeritageGallerySection: React.FC<LifeAtHeritageGallerySection
                         <img
                           src={item.url}
                           alt={item.title}
+                          loading="eager"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
