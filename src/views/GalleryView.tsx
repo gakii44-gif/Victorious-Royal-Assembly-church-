@@ -33,7 +33,8 @@ import {
   Maximize2,
   HeartHandshake,
   Move,
-  HardDrive
+  HardDrive,
+  Lock
 } from 'lucide-react';
 import { VRAILogo } from '../components/VRAILogo';
 import { LifeAtHeritageGallerySection } from '../components/LifeAtHeritageGallerySection';
@@ -293,23 +294,36 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
               </p>
             </div>
 
-            {/* Direct Multi Upload Trigger */}
+            {/* Direct Multi Upload Trigger - Staff Mode Only */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <button
-                onClick={openPhotoSyncModal}
-                className="px-4 py-3 bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 hover:scale-[1.02]"
-                title="Make all uploaded photos permanent and visible on the published website"
-              >
-                <HardDrive className="w-4 h-4 text-emerald-950" />
-                <span>🚀 Publish to Live Site</span>
-              </button>
-              <button
-                onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
-                className="px-5 py-3 bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2.5 hover:scale-[1.02]"
-              >
-                <Upload className="w-4 h-4 text-lime-300" />
-                <span>Upload Photos &amp; Videos</span>
-              </button>
+              {isEditorMode ? (
+                <>
+                  <button
+                    onClick={openPhotoSyncModal}
+                    className="px-4 py-3 bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 hover:scale-[1.02]"
+                    title="Make all uploaded photos permanent and visible on the published website"
+                  >
+                    <HardDrive className="w-4 h-4 text-emerald-950" />
+                    <span>🚀 Publish to Live Site</span>
+                  </button>
+                  <button
+                    onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
+                    className="px-5 py-3 bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2.5 hover:scale-[1.02]"
+                  >
+                    <Upload className="w-4 h-4 text-lime-300" />
+                    <span>Upload Photos &amp; Videos</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setIsEditorMode(true)}
+                  className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-stone-200 hover:text-white font-medium rounded-xl text-xs transition-colors flex items-center gap-2 border border-white/15"
+                  title="Enable staff photo management and upload mode"
+                >
+                  <Lock className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Staff Media Access</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -329,27 +343,22 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                 Categorized Ministry &amp; School Media Integrity Standard
               </p>
               <p className="text-[11px] text-stone-600">
-                Every photo and video belongs to its verified department in Juba. Use <strong>Replace</strong> to update misplaced photos, change categories, or swap files anytime.
+                Authentic archival photography and videography from Victorious Royal Assembly International and Victorious Heritage Schools in Juba, Central Equatoria State.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs shrink-0">
-            <button
-              onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
-              className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1.5 underline underline-offset-4"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add to Gallery</span>
-            </button>
-            <span className="text-stone-300">|</span>
-            <button
-              onClick={onOpenAssetGuide}
-              className="text-stone-500 hover:text-stone-800"
-            >
-              Media Guide
-            </button>
-          </div>
+          {isEditorMode && (
+            <div className="flex items-center gap-3 text-xs shrink-0">
+              <button
+                onClick={() => openMultiUploadModal(activeTab === 'all' ? 'victorious-heritage' : activeTab)}
+                className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1.5 underline underline-offset-4"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add to Gallery</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 5-SECTION GALLERY TABS SWITCHER */}

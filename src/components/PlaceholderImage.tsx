@@ -38,7 +38,7 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
   className = '',
   onOpenAssetGuide,
 }) => {
-  const { getPhoto, openUploadModal, removePhoto, openFocalAdjustModal } = usePhotos();
+  const { getPhoto, openUploadModal, removePhoto, openFocalAdjustModal, isEditorMode } = usePhotos();
   const [candidateIndex, setCandidateIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -137,8 +137,8 @@ export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
         }}
       />
 
-      {/* Interactive Controls Overlay (Adjust Face / Drag, Replace, Delete) */}
-      {slotKey && (
+      {/* Interactive Controls Overlay (Adjust Face / Drag, Replace, Delete) - Staff Mode Only */}
+      {slotKey && isEditorMode && (
         <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20">
           {/* Adjust Framing & Drag Face button */}
           <button

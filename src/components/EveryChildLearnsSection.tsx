@@ -28,7 +28,7 @@ export const EveryChildLearnsSection: React.FC<EveryChildLearnsSectionProps> = (
   onOpenAssetGuide,
   className = '',
 }) => {
-  const { getPhoto, openUploadModal } = usePhotos();
+  const { getPhoto, openUploadModal, isEditorMode } = usePhotos();
   const photoSlotKey = 'heritage-graduation-stage';
   const graduationPhoto = getPhoto(photoSlotKey);
 
@@ -175,27 +175,31 @@ export const EveryChildLearnsSection: React.FC<EveryChildLearnsSectionProps> = (
                     <span className="text-[11px] text-stone-400 italic">
                       &ldquo;Knowledge is Victory&rdquo;
                     </span>
-                    <button
-                      onClick={() => openUploadModal(photoSlotKey, 'Victorious Heritage Graduation Ceremony Photograph')}
-                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-lg font-semibold text-[11px] flex items-center gap-1.5 backdrop-blur-xs transition-colors border border-white/20"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-lime-300" />
-                      <span>Upload Real Photo</span>
-                    </button>
+                    {isEditorMode && (
+                      <button
+                        onClick={() => openUploadModal(photoSlotKey, 'Victorious Heritage Graduation Ceremony Photograph')}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-lg font-semibold text-[11px] flex items-center gap-1.5 backdrop-blur-xs transition-colors border border-white/20"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-lime-300" />
+                        <span>Upload Real Photo</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Hover Overlay Button to Replace Photo */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
-                <button
-                  onClick={() => openUploadModal(photoSlotKey, 'Victorious Heritage Graduation Ceremony Photograph')}
-                  className="px-4 py-2 bg-white text-slate-900 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2 hover:bg-stone-100 transition-colors"
-                >
-                  <Camera className="w-4 h-4 text-emerald-800" />
-                  <span>{graduationPhoto ? 'Replace Graduation Photo' : 'Upload Real Graduation Photo'}</span>
-                </button>
-              </div>
+              {/* Hover Overlay Button to Replace Photo - Staff Mode Only */}
+              {isEditorMode && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                  <button
+                    onClick={() => openUploadModal(photoSlotKey, 'Victorious Heritage Graduation Ceremony Photograph')}
+                    className="px-4 py-2 bg-white text-slate-900 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2 hover:bg-stone-100 transition-colors"
+                  >
+                    <Camera className="w-4 h-4 text-emerald-800" />
+                    <span>{graduationPhoto ? 'Replace Graduation Photo' : 'Upload Real Graduation Photo'}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             <p className="text-center text-[11px] text-stone-500 mt-2.5 font-medium">

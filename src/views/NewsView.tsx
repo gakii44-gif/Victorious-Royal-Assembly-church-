@@ -17,7 +17,7 @@ export const NewsView: React.FC<NewsViewProps> = ({
   selectedStoryId,
 }) => {
   const { newsStories } = organizationData;
-  const { openUploadModal } = usePhotos();
+  const { openUploadModal, isEditorMode } = usePhotos();
   const [activeStory, setActiveStory] = useState<NewsStory | null>(() => {
     if (selectedStoryId) {
       return newsStories.find(s => s.id === selectedStoryId) || null;
@@ -94,14 +94,16 @@ export const NewsView: React.FC<NewsViewProps> = ({
                     <span>Read Full Story</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => openUploadModal(story.photoSlotKey, `${story.title} Photograph`)}
-                    className="text-[11px] text-stone-400 hover:text-stone-700 flex items-center gap-1"
-                    title="Upload real photograph"
-                  >
-                    <Camera className="w-3 h-3" />
-                    <span>Upload</span>
-                  </button>
+                  {isEditorMode && (
+                    <button
+                      onClick={() => openUploadModal(story.photoSlotKey, `${story.title} Photograph`)}
+                      className="text-[11px] text-stone-400 hover:text-stone-700 flex items-center gap-1"
+                      title="Upload real photograph"
+                    >
+                      <Camera className="w-3 h-3" />
+                      <span>Upload</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </article>

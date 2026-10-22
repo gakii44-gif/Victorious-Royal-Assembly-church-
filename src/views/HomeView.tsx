@@ -53,7 +53,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenLogoPreview,
 }) => {
   const { hero, welcome, missionAndVision, ministries, school, schools, missionsAndOutreach, partnership, newsStories, callToAction, socialLinks } = organizationData;
-  const { getPhoto, openUploadModal, galleryPhotos, openMultiUploadModal, openFocalAdjustModal } = usePhotos();
+  const { getPhoto, openUploadModal, galleryPhotos, openMultiUploadModal, openFocalAdjustModal, isEditorMode } = usePhotos();
   const [homeGalleryTab, setHomeGalleryTab] = React.useState<'all' | GalleryCategory>('all');
   const heroPhoto = getPhoto(hero.photoSlotKey);
 
@@ -225,14 +225,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <span>Learn More</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => openUploadModal(min.photoSlotKey, `${min.name} Photograph`)}
-                    className="text-[11px] text-stone-400 hover:text-stone-700 flex items-center gap-1"
-                    title="Upload real photograph"
-                  >
-                    <Camera className="w-3 h-3" />
-                    <span>Upload Photo</span>
-                  </button>
+                  {isEditorMode && (
+                    <button
+                      onClick={() => openUploadModal(min.photoSlotKey, `${min.name} Photograph`)}
+                      className="text-[11px] text-stone-400 hover:text-stone-700 flex items-center gap-1"
+                      title="Upload real photograph"
+                    >
+                      <Camera className="w-3 h-3" />
+                      <span>Upload Photo</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

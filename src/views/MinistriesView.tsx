@@ -17,7 +17,7 @@ export const MinistriesView: React.FC<MinistriesViewProps> = ({
   onOpenDonateModal,
 }) => {
   const { ministries } = organizationData;
-  const { openUploadModal } = usePhotos();
+  const { openUploadModal, isEditorMode } = usePhotos();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -112,13 +112,15 @@ export const MinistriesView: React.FC<MinistriesViewProps> = ({
               </div>
 
               <div className="pt-4 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => openUploadModal(min.photoSlotKey, `${min.name} Photograph`)}
-                  className="px-4 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-200"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                  <span>Upload Real Ministry Photo</span>
-                </button>
+                {isEditorMode && (
+                  <button
+                    onClick={() => openUploadModal(min.photoSlotKey, `${min.name} Photograph`)}
+                    className="px-4 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-200"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Upload Real Ministry Photo</span>
+                  </button>
+                )}
                 <button
                   onClick={() => onNavigate('contact')}
                   className="px-4 py-2 text-xs font-medium text-stone-600 hover:text-slate-900 flex items-center gap-1"

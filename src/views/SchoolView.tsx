@@ -55,6 +55,7 @@ export const SchoolView: React.FC<SchoolViewProps> = ({
     removeGalleryPhoto,
     churchLogoUrl,
     schoolLogoUrl,
+    isEditorMode,
   } = usePhotos();
 
   const [activeTab, setActiveTab] = useState<'all' | 'primary' | 'technical' | 'gallery' | 'admissions'>('all');
@@ -457,13 +458,15 @@ export const SchoolView: React.FC<SchoolViewProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-stone-500">
                 <span className="font-semibold text-slate-800">Primary Campus &amp; Pupil Assembly</span>
-                <button
-                  onClick={() => openUploadModal('school-hero', 'Victorious Heritage Primary Campus')}
-                  className="text-emerald-800 font-bold hover:underline flex items-center gap-1"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                  <span>Update Campus Photo</span>
-                </button>
+                {isEditorMode && (
+                  <button
+                    onClick={() => openUploadModal('school-hero', 'Victorious Heritage Primary Campus')}
+                    className="text-emerald-800 font-bold hover:underline flex items-center gap-1"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Update Campus Photo</span>
+                  </button>
+                )}
               </div>
               <PlaceholderImage
                 slotKey="school-hero"
