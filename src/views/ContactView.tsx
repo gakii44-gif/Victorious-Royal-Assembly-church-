@@ -94,42 +94,33 @@ export const ContactView: React.FC<ContactViewProps> = ({
                   </div>
                 </div>
 
-                {/* Direct Phone Lines from Flier */}
+                {/* Direct Phone & WhatsApp Lines */}
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-100">
                     <Phone className="w-4 h-4" />
                   </div>
-                  <div className="space-y-1.5 w-full">
-                    <strong className="text-slate-900 block text-xs">Official Contact Lines (From Church Flier):</strong>
+                  <div className="space-y-2 w-full">
+                    <strong className="text-slate-900 block text-xs">Official Contact &amp; WhatsApp:</strong>
                     <div className="flex flex-wrap gap-2 pt-0.5">
                       <a
-                        href={`tel:${organizationData.contact.phone.replace(/\s+/g, '')}`}
-                        className="px-3 py-1.5 bg-stone-100 hover:bg-emerald-50 hover:text-emerald-900 text-slate-900 rounded-md font-mono text-[11px] font-bold border border-stone-200 transition-colors inline-flex items-center gap-1.5"
+                        href={`tel:${organizationData.contact.phone.replace(/[^0-9+]/g, '')}`}
+                        className="px-3.5 py-2 bg-stone-100 hover:bg-emerald-50 hover:text-emerald-900 text-slate-900 rounded-lg font-mono text-xs font-bold border border-stone-200 transition-colors inline-flex items-center gap-2 shadow-xs"
+                        title="Call Main Church Line"
                       >
-                        <span>Line 1: {organizationData.contact.phone}</span>
+                        <Phone className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Main Line: {organizationData.contact.phone}</span>
                       </a>
                       <a
-                        href={`tel:${organizationData.contact.phoneSecondary.replace(/\s+/g, '')}`}
-                        className="px-3 py-1.5 bg-stone-100 hover:bg-emerald-50 hover:text-emerald-900 text-slate-900 rounded-md font-mono text-[11px] font-bold border border-stone-200 transition-colors inline-flex items-center gap-1.5"
-                      >
-                        <span>Line 2: {organizationData.contact.phoneSecondary}</span>
-                      </a>
-                      <a
-                        href={`tel:${organizationData.contact.phoneAlternate.replace(/\s+/g, '')}`}
-                        className="px-3 py-1.5 bg-stone-100 hover:bg-emerald-50 hover:text-emerald-900 text-slate-900 rounded-md font-mono text-[11px] font-bold border border-stone-200 transition-colors inline-flex items-center gap-1.5"
-                      >
-                        <span>Line 3: {organizationData.contact.phoneAlternate}</span>
-                      </a>
-                    </div>
-                    <div className="pt-1">
-                      <a
-                        href={`https://wa.me/${organizationData.contact.whatsapp.replace(/[^0-9]/g, '')}`}
+                        href={organizationData.contact.whatsappUrl || `https://wa.me/${organizationData.contact.whatsapp.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-emerald-800 hover:text-emerald-950 font-bold inline-flex items-center gap-1 text-[11px] underline underline-offset-2"
+                        className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-xs"
+                        title="Chat on WhatsApp (+211 924 351 236)"
                       >
-                        <span>Direct WhatsApp: {organizationData.contact.whatsapp}</span>
-                        <ExternalLink className="w-3 h-3" />
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.074-1.638-.344-.814-.339-1.474-.834-2.062-1.422-.588-.588-1.083-1.248-1.422-2.062-.418-1.004-.389-1.326-.344-1.638.05-.333.419-1.026.824-1.17.135-.048.281-.03.393.045.105.07.72 1.737.784 1.871.063.135.048.27-.044.382-.09.112-.178.182-.268.272-.09.09-.187.187-.08.371.107.184.475.784 1.02 1.27.701.625 1.293.818 1.477.91.184.092.292.077.404-.044.112-.12.482-.562.61-.754.128-.192.256-.16.425-.096.17.064 1.08.51 1.265.602.185.092.308.138.353.215.045.077.045.45-.099.855zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.436 5.176L2 22l4.981-1.396A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+                        </svg>
+                        <span>Chat on WhatsApp: {organizationData.contact.whatsapp}</span>
                       </a>
                     </div>
                   </div>

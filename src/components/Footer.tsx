@@ -103,12 +103,47 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{organizationData.contact.phonePlaceholder}</span>
+                <a
+                  href={`tel:${organizationData.contact.phone.replace(/[^0-9+]/g, '')}`}
+                  className="hover:text-emerald-300 transition-colors select-all font-mono"
+                  title="Call Victorious Royal Assembly"
+                >
+                  {organizationData.contact.phone}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 fill-emerald-400 shrink-0" viewBox="0 0 24 24">
+                  <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.074-1.638-.344-.814-.339-1.474-.834-2.062-1.422-.588-.588-1.083-1.248-1.422-2.062-.418-1.004-.389-1.326-.344-1.638.05-.333.419-1.026.824-1.17.135-.048.281-.03.393.045.105.07.72 1.737.784 1.871.063.135.048.27-.044.382-.09.112-.178.182-.268.272-.09.09-.187.187-.08.371.107.184.475.784 1.02 1.27.701.625 1.293.818 1.477.91.184.092.292.077.404-.044.112-.12.482-.562.61-.754.128-.192.256-.16.425-.096.17.064 1.08.51 1.265.602.185.092.308.138.353.215.045.077.045.45-.099.855zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.436 5.176L2 22l4.981-1.396A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+                </svg>
+                <a
+                  href={organizationData.contact.whatsappUrl || `https://wa.me/${organizationData.contact.whatsapp.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors flex items-center gap-1.5"
+                  title="Direct WhatsApp Chat"
+                >
+                  <span>WhatsApp:</span>
+                  <span className="font-mono text-stone-300 hover:underline">{organizationData.contact.whatsapp}</span>
+                </a>
               </div>
             </div>
 
             {/* Social Media Links */}
             <div className="flex flex-wrap items-center gap-2.5 pt-3">
+              {organizationData.socialLinks.whatsapp && (
+                <a
+                  href={organizationData.socialLinks.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-stone-800 hover:bg-emerald-700 text-stone-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors border border-stone-700"
+                  title="Chat with Victorious Royal Assembly on WhatsApp (+211 924 351 236)"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current text-emerald-400" viewBox="0 0 24 24">
+                    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.074-1.638-.344-.814-.339-1.474-.834-2.062-1.422-.588-.588-1.083-1.248-1.422-2.062-.418-1.004-.389-1.326-.344-1.638.05-.333.419-1.026.824-1.17.135-.048.281-.03.393.045.105.07.72 1.737.784 1.871.063.135.048.27-.044.382-.09.112-.178.182-.268.272-.09.09-.187.187-.08.371.107.184.475.784 1.02 1.27.701.625 1.293.818 1.477.91.184.092.292.077.404-.044.112-.12.482-.562.61-.754.128-.192.256-.16.425-.096.17.064 1.08.51 1.265.602.185.092.308.138.353.215.045.077.045.45-.099.855zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.436 5.176L2 22l4.981-1.396A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+                  </svg>
+                  <span>WhatsApp</span>
+                </a>
+              )}
               {organizationData.socialLinks.youtube && (
                 <a
                   href={organizationData.socialLinks.youtube}

@@ -160,6 +160,7 @@ export interface OrganizationData {
     facebook: string;
     tiktok: string;
     youtube?: string;
+    whatsapp?: string;
   };
   hero: {
     headline: string;
@@ -260,9 +261,10 @@ export interface OrganizationData {
     emailPlaceholder: string;
     donorLiaisonEmailPlaceholder: string;
     phone: string;
-    phoneSecondary: string;
-    phoneAlternate: string;
+    phoneSecondary?: string;
+    phoneAlternate?: string;
     whatsapp: string;
+    whatsappUrl?: string;
     phonePlaceholder: string;
     officeHours: string;
     addressPlaceholder: string;
@@ -300,13 +302,14 @@ export const organizationData: OrganizationData = {
     district: "Tongping",
     compoundDescription: "Tongping (Former Nilepet Road), Juba, South Sudan",
     directions: "Tongping, Former Nilepet Road, Juba, Central Equatoria State, Republic of South Sudan",
-    googleMapsUrl: "https://maps.app.goo.gl/G7yv5XqLqfpW55EX8?g_st=ac",
+    googleMapsUrl: "https://maps.app.goo.gl/UwNCSPh1mgaq3nGM7?g_st=ac",
   },
 
   socialLinks: {
     facebook: "https://www.facebook.com/share/19ZywCQkPt/",
     tiktok: "https://www.tiktok.com/@victorious.royal4?_r=1&_t=ZS-9AZvd6ASlCn",
     youtube: "https://youtube.com/@victoriousroyaltv3141?feature=shared",
+    whatsapp: "https://wa.me/211924351236",
   },
 
   hero: {
@@ -680,11 +683,10 @@ export const organizationData: OrganizationData = {
   contact: {
     emailPlaceholder: "andyisreal05@yahoo.com",
     donorLiaisonEmailPlaceholder: "andyisreal05@yahoo.com",
-    phone: "+211 (0) 925 332 626",
-    phoneSecondary: "+211 (0) 929 522 922",
-    phoneAlternate: "+211 (0) 922 221 179",
-    whatsapp: "+211 925 332 626",
-    phonePlaceholder: "+211 (0) 925 332 626 / +211 (0) 929 522 922",
+    phone: "+211 924 351 236",
+    whatsapp: "+211 924 351 236",
+    whatsappUrl: "https://wa.me/211924351236",
+    phonePlaceholder: "+211 924 351 236",
     officeHours: "Monday – Friday: 8:30 AM – 5:00 PM CAT · Sunday Services: 8:00 AM & 10:30 AM · Wednesday: 5:00 PM",
     addressPlaceholder: "Tongping (Former Nilepet Road), Juba, Central Equatoria State, Republic of South Sudan",
     serviceSchedule: [

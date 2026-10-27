@@ -924,7 +924,7 @@ export const SchoolView: React.FC<SchoolViewProps> = ({
                       required
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="+211 925 ... or local number"
+                      placeholder="+211 924 ... or local number"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs text-slate-900 focus:outline-emerald-700 focus:border-emerald-700"
                     />
                   </div>

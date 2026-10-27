@@ -964,11 +964,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
               Watch Services &amp; School Highlights on YouTube, TikTok and Facebook
             </h3>
             <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-              Connect with Victorious Royal Assembly International live from Juba, South Sudan. Contact lines: <strong className="text-white font-mono">+211 925 332 626</strong> / <strong className="text-white font-mono">+211 929 522 922</strong>.
+              Connect with Victorious Royal Assembly International live from Juba, South Sudan. Main line &amp; WhatsApp: <strong className="text-white font-mono">+211 924 351 236</strong>.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {socialLinks.whatsapp && (
+              <a
+                href={socialLinks.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.074-1.638-.344-.814-.339-1.474-.834-2.062-1.422-.588-.588-1.083-1.248-1.422-2.062-.418-1.004-.389-1.326-.344-1.638.05-.333.419-1.026.824-1.17.135-.048.281-.03.393.045.105.07.72 1.737.784 1.871.063.135.048.27-.044.382-.09.112-.178.182-.268.272-.09.09-.187.187-.08.371.107.184.475.784 1.02 1.27.701.625 1.293.818 1.477.91.184.092.292.077.404-.044.112-.12.482-.562.61-.754.128-.192.256-.16.425-.096.17.064 1.08.51 1.265.602.185.092.308.138.353.215.045.077.045.45-.099.855zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.436 5.176L2 22l4.981-1.396A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+                </svg>
+                <span>WhatsApp (+211 924 351 236)</span>
+              </a>
+            )}
             {socialLinks.youtube && (
               <a
                 href={socialLinks.youtube}

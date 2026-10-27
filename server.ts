@@ -9,9 +9,17 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const isProduction = process.env.NODE_ENV === 'production';
+  const distDir = path.resolve(__dirname, 'dist');
+  const hasDist = fs.existsSync(distDir);
+  // Production detection: In Cloud Run, PORT is set (typically 8080) or NODE_ENV is production or start script is invoked
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    process.env.npm_lifecycle_event === 'start' ||
+    (process.env.PORT !== undefined && Number(process.env.PORT) !== 3000) ||
+    (hasDist && process.env.NODE_ENV !== 'development');
+
   // Dev server must run on port 3000. Production on Cloud Run listens on process.env.PORT (default 8080).
-  const PORT = isProduction ? (Number(process.env.PORT) || 8080) : 3000;
+  const PORT = Number(process.env.PORT) || (isProduction ? 8080 : 3000);
 
   // Support up to 100MB payload for photo & video uploads
   app.use(express.json({ limit: '100mb' }));
@@ -29,6 +37,11 @@ async function startServer() {
   }
 
   // --- API ROUTES ---
+
+  // Health check endpoints for Cloud Run and external monitoring
+  app.get(['/health', '/api/health', '/_health'], (_req: Request, res: Response) => {
+    return res.status(200).json({ status: 'ok', uptime: process.uptime() });
+  });
 
   // 1. Health check & status
   app.get('/api/status', (_req: Request, res: Response) => {
@@ -431,11 +444,23 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    // Production mode: serve built assets from dist/
-    const distDir = path.resolve(__dirname, 'dist');
+    // Production mode: serve built assets from dist/ and public/
+    const publicDir = path.resolve(__dirname, 'public');
+    if (fs.existsSync(publicDir)) {
+      app.use(express.static(publicDir));
+    }
     app.use(express.static(distDir));
+    const distIndexHtml = path.resolve(distDir, 'index.html');
+    const rootIndexHtml = path.resolve(__dirname, 'index.html');
+
     app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.resolve(distDir, 'index.html'));
+      if (fs.existsSync(distIndexHtml)) {
+        return res.sendFile(distIndexHtml);
+      }
+      if (fs.existsSync(rootIndexHtml)) {
+        return res.sendFile(rootIndexHtml);
+      }
+      return res.status(200).send('<!doctype html><html><head><title>VRAI</title></head><body>Victorious Royal Assembly International Service Online</body></html>');
     });
   }
 
