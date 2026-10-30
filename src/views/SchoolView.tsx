@@ -437,20 +437,34 @@ export const SchoolView: React.FC<SchoolViewProps> = ({
                 </p>
               </div>
 
-              <div className="shrink-0 flex items-center gap-3">
+              <div className="shrink-0 flex flex-wrap items-center gap-3">
+                <a
+                  href={schools.heritageAcademy.facebookUrl || "https://www.facebook.com/share/19g3gASbBZ/?mibextid=wwXIfr"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-900 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 border border-blue-200 shadow-xs"
+                  title="Follow Victorious Heritage School on Facebook"
+                >
+                  <svg className="w-4 h-4 fill-current text-blue-600" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span>School Facebook</span>
+                </a>
                 <button
                   onClick={() => onOpenDonateModal('heritage')}
                   className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-xs"
                 >
                   Sponsor a Primary Child
                 </button>
-                <button
-                  onClick={() => openMultiUploadModal('victorious-heritage')}
-                  className="p-2.5 text-stone-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-xl border border-stone-200 transition-colors"
-                  title="Upload photos for Victorious Heritage"
-                >
-                  <Camera className="w-4 h-4" />
-                </button>
+                {isEditorMode && (
+                  <button
+                    onClick={() => openMultiUploadModal('victorious-heritage')}
+                    className="p-2.5 text-stone-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-xl border border-stone-200 transition-colors"
+                    title="Upload photos for Victorious Heritage"
+                  >
+                    <Camera className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
 

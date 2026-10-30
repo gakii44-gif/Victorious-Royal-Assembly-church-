@@ -137,6 +137,7 @@ export interface DetailedSchool {
   photoSlotKey: string;
   photoPlaceholderPath: string;
   heroImagePlaceholder: string;
+  facebookUrl?: string;
 }
 
 export interface OrganizationData {
@@ -158,6 +159,7 @@ export interface OrganizationData {
   };
   socialLinks: {
     facebook: string;
+    schoolFacebook?: string;
     tiktok: string;
     youtube?: string;
     whatsapp?: string;
@@ -307,6 +309,7 @@ export const organizationData: OrganizationData = {
 
   socialLinks: {
     facebook: "https://www.facebook.com/share/19ZywCQkPt/",
+    schoolFacebook: "https://www.facebook.com/share/19g3gASbBZ/?mibextid=wwXIfr",
     tiktok: "https://www.tiktok.com/@victorious.royal4?_r=1&_t=ZS-9AZvd6ASlCn",
     youtube: "https://youtube.com/@victoriousroyaltv3141?feature=shared",
     whatsapp: "https://wa.me/211924351236",
@@ -929,6 +932,7 @@ export const organizationData: OrganizationData = {
       photoSlotKey: "school-hero",
       photoPlaceholderPath: "/assets/schools/heritage-academy/hero-heritage.svg",
       heroImagePlaceholder: "/assets/schools/heritage-academy/hero-heritage.svg",
+      facebookUrl: "https://www.facebook.com/share/19g3gASbBZ/?mibextid=wwXIfr",
     },
 
     vocationalSchool: {
